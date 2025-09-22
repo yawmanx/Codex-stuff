@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Yaw Manso Kyeremeh, MD, MSc – Curriculum Vitae</title>
+    <meta
+      name="description"
+      content="Curriculum vitae for Dr. Yaw Manso Kyeremeh, Senior Physician in Internal Medicine & Oncology with leadership in advanced endoscopy and gastrointestinal oncology."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --accent: #1e4b7a;
+        --accent-soft: #e4eef7;
+        --bg: #f5f7fa;
+        --text: #1a1c1f;
+        --muted: #5d636c;
+        --card: #ffffff;
+        --border: #d6dde7;
+        font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 16px;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a:hover,
+      a:focus {
+        text-decoration: underline;
+        color: var(--accent);
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 48px auto;
+        padding: 40px;
+        background: var(--card);
+        box-shadow: 0 24px 48px rgba(11, 46, 91, 0.12);
+        border-radius: 20px;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 48px;
+      }
+
+      header.hero {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 32px;
+        margin-bottom: 32px;
+      }
+
+      .hero h1 {
+        font-size: 2.4rem;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--accent);
+      }
+
+      .hero .role {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-top: 8px;
+        display: block;
+      }
+
+      .hero .sub {
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 0.95rem;
+      }
+
+      .hero .quick-stats {
+        display: flex;
+        gap: 16px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+
+      .hero .stat {
+        background: var(--accent-soft);
+        border-radius: 12px;
+        padding: 12px 16px;
+        min-width: 120px;
+      }
+
+      .hero .stat span {
+        display: block;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--accent);
+      }
+
+      aside.sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .sidebar section {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+      }
+
+      .section-title {
+        font-size: 0.85rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 16px;
+      }
+
+      .contact-list {
+        display: grid;
+        gap: 8px;
+        font-size: 0.95rem;
+      }
+
+      .contact-list span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        background: var(--accent-soft);
+        color: var(--accent);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      ul.clean {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      ul.clean li {
+        padding-left: 0;
+        position: relative;
+      }
+
+      main.content {
+        display: grid;
+        gap: 40px;
+      }
+
+      section.block {
+        display: grid;
+        gap: 24px;
+      }
+
+      section.block p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .impact-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .impact-card {
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 20px;
+        background: linear-gradient(145deg, #ffffff, #f8fbff);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+
+      .impact-card h4 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+        color: var(--accent);
+      }
+
+      .impact-card p {
+        margin: 0;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      .timeline {
+        border-left: 2px solid var(--border);
+        padding-left: 24px;
+        display: grid;
+        gap: 24px;
+      }
+
+      .timeline article {
+        position: relative;
+        padding-left: 16px;
+      }
+
+      .timeline article::before {
+        content: "";
+        position: absolute;
+        left: -35px;
+        top: 6px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 3px solid var(--accent);
+        background: var(--card);
+      }
+
+      .timeline h3 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      .timeline .role {
+        font-weight: 600;
+        margin-top: 4px;
+        display: block;
+      }
+
+      .timeline .meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 2px;
+      }
+
+      .timeline ul {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+
+      .timeline ul li {
+        margin-bottom: 8px;
+      }
+
+      .project-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .project-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        background: var(--card);
+        box-shadow: 0 10px 30px rgba(10, 40, 72, 0.08);
+      }
+
+      .project-card h4 {
+        margin: 0 0 8px;
+        color: var(--accent);
+      }
+
+      .project-card span {
+        display: inline-block;
+        font-size: 0.82rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .education-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .education-item {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        background: var(--card);
+      }
+
+      .education-item h4 {
+        margin: 0 0 4px;
+      }
+
+      .education-item .meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      footer {
+        border-top: 1px solid var(--border);
+        padding-top: 24px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      footer a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      @media (max-width: 1024px) {
+        .page {
+          grid-template-columns: 1fr;
+          padding: 32px;
+        }
+
+        aside.sidebar {
+          order: 2;
+        }
+
+        main.content {
+          order: 1;
+        }
+      }
+
+      @media (max-width: 600px) {
+        body {
+          font-size: 15px;
+        }
+
+        .page {
+          margin: 0;
+          border-radius: 0;
+          padding: 24px 18px 48px;
+          box-shadow: none;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar" aria-label="Profile summary">
+        <section>
+          <p class="section-title">Contact</p>
+          <div class="contact-list">
+            <div>
+              <strong>Steinbacher Gaerten 48</strong>
+              <span>35463 Fernwald, Germany</span>
+            </div>
+            <div>
+              <a href="tel:+491788239115">+49 (0)178 823 9115</a>
+              <span>Mobile</span>
+            </div>
+            <div>
+              <a href="mailto:yawmanx@gmail.com">yawmanx@gmail.com</a>
+              <span>Primary email</span>
+            </div>
+            <div>
+              <a href="mailto:y.kyeremeh@asklepios.com">y.kyeremeh@asklepios.com</a>
+              <span>Hospital email</span>
+            </div>
+            <div>
+              <a href="CV_Yaw_Manso_Kyeremeh_English_redesign.pdf" download>Download PDF</a>
+              <span>Full version</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <p class="section-title">Core Competencies</p>
+          <div class="tag-list">
+            <span class="tag">Oncology Leadership</span>
+            <span class="tag">Advanced Endoscopy</span>
+            <span class="tag">Clinical Research</span>
+            <span class="tag">Quality &amp; Safety</span>
+            <span class="tag">Pathway Design</span>
+            <span class="tag">Mentorship</span>
+          </div>
+        </section>
+
+        <section>
+          <p class="section-title">Licences &amp; Certifications</p>
+          <ul class="clean">
+            <li><strong>2023:</strong> Specialist in Internal Medicine (Germany)</li>
+            <li><strong>2023:</strong> Subspecialty in Palliative Medicine (Germany)</li>
+            <li><strong>2016:</strong> German Medical Licence</li>
+            <li><strong>2012:</strong> MBChB Registration, Ghana Medical and Dental Council</li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="section-title">Languages</p>
+          <ul class="clean">
+            <li>Akan – Native</li>
+            <li>English – Fluent</li>
+            <li>German – Fluent</li>
+            <li>French – Conversational</li>
+          </ul>
+        </section>
+      </aside>
+
+      <main class="content">
+        <header class="hero">
+          <h1>Yaw Manso Kyeremeh, MD, MSc</h1>
+          <span class="role">Senior Physician – Internal Medicine &amp; Oncology</span>
+          <div class="sub">Advanced Endoscopy &amp; Gastrointestinal Oncology</div>
+          <div class="quick-stats" aria-label="Career highlights">
+            <div class="stat">
+              <span>12+ yrs</span>
+              Post-graduate clinical leadership
+            </div>
+            <div class="stat">
+              <span>AI-driven</span>
+              Diagnostics &amp; care pathways
+            </div>
+            <div class="stat">
+              <span>Multi-site</span>
+              Oncology programme design
+            </div>
+          </div>
+        </header>
+
+        <section class="block" aria-labelledby="summary">
+          <h2 id="summary">Executive Summary</h2>
+          <p>
+            Senior Physician (Oberarzt) with 12+ years of post-graduate experience spanning internal medicine, gastrointestinal
+            oncology, and advanced interventional endoscopy. Recognised for leading multidisciplinary teams, embedding
+            AI-assisted diagnostics, and translating research evidence into patient-centred pathways. Graduate of the MSc Advanced
+            Oncology programme at the University of Ulm (June 2025) with publications and case series covering digital health
+            integration and endoscopic innovation.
+          </p>
+        </section>
+
+        <section class="block" aria-labelledby="impact">
+          <h2 id="impact">Signature Impact</h2>
+          <div class="impact-grid">
+            <article class="impact-card">
+              <h4>AI-assisted endoscopy</h4>
+              <p>
+                Piloted an imaging workflow that increased complex lesion detection sensitivity by 14% and enhanced decision-making
+                for advanced resections.
+              </p>
+            </article>
+            <article class="impact-card">
+              <h4>Oncology navigation</h4>
+              <p>
+                Co-created a gastrointestinal cancer navigation programme that cut time-to-treatment by 20% and improved patient
+                experience scores.
+              </p>
+            </article>
+            <article class="impact-card">
+              <h4>Quality &amp; safety leadership</h4>
+              <p>
+                Implemented sedation safety protocols and cross-specialty training that drove an 18% reduction in adverse events
+                within a high-volume endoscopy unit.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="experience">
+          <h2 id="experience">Professional Experience</h2>
+          <div class="timeline">
+            <article>
+              <h3>Asklepios Klinik Lich – Department of Internal Medicine, Germany</h3>
+              <span class="role">Senior Physician (Oberarzt)</span>
+              <div class="meta">Oct 2024 – Present</div>
+              <ul>
+                <li>Direct the gastrointestinal oncology service, combining advanced endoscopic diagnostics with personalised systemic therapy plans.</li>
+                <li>Chair tumour boards and align surgeons, oncologists, radiologists, and nursing teams around integrated care pathways.</li>
+                <li>Lead quality improvement workstreams and mentor junior physicians on complex endoscopic techniques.</li>
+              </ul>
+            </article>
+            <article>
+              <h3>University Hospital of Giessen and Marburg – Central Interdisciplinary Endoscopy Unit (ZIVE)</h3>
+              <span class="role">Senior Physician</span>
+              <div class="meta">Jan 2024 – Sep 2024</div>
+              <ul>
+                <li>Directed a high-volume endoscopy programme leveraging enhanced imaging and AI-supported decision support.</li>
+                <li>Introduced sedation safety and recovery protocols that lowered adverse event rates by 18%.</li>
+                <li>Designed and rolled out a cross-specialty training curriculum for gastroenterology, surgery, and nursing staff.</li>
+              </ul>
+            </article>
+            <article>
+              <h3>University Hospital of Giessen and Marburg – Department of Internal Medicine</h3>
+              <span class="role">Consultant in Internal Medicine</span>
+              <div class="meta">Jul 2023 – Dec 2023</div>
+              <ul>
+                <li>Oversaw complex inpatient oncology cases with individualised treatment plans and symptom-management pathways.</li>
+                <li>Launched data-driven symptom management bundles that improved patient-reported outcomes for advanced cancer cohorts.</li>
+              </ul>
+            </article>
+            <article>
+              <h3>University Hospital of Giessen and Marburg, Germany</h3>
+              <span class="role">Resident Physician</span>
+              <div class="meta">Jan 2017 – Jun 2023</div>
+              <ul>
+                <li>Completed rotations across internal medicine subspecialties with emphasis on gastroenterology and oncologic care.</li>
+                <li>Contributed to clinical trials investigating targeted gastrointestinal cancer therapies and advanced endoscopic imaging.</li>
+              </ul>
+            </article>
+            <article>
+              <h3>Greater Accra Regional Hospital, Ghana</h3>
+              <span class="role">Resident Physician</span>
+              <div class="meta">Sep 2012 – Dec 2015</div>
+              <ul>
+                <li>Delivered acute medical care in resource-constrained settings with high caseloads of hepatobiliary and colorectal disease.</li>
+                <li>Led community screening initiatives for early detection of gastrointestinal malignancies.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="projects">
+          <h2 id="projects">Strategic Projects &amp; Leadership</h2>
+          <div class="project-grid">
+            <article class="project-card">
+              <span>2024</span>
+              <h4>AI-Assisted Imaging Pathway</h4>
+              <p>Piloted and scaled an AI-enhanced workflow for complex endoscopic resections, improving detection sensitivity by 14% and reducing repeat procedures.</p>
+            </article>
+            <article class="project-card">
+              <span>2023</span>
+              <h4>Integrated Oncology Navigation</h4>
+              <p>Co-created a navigation programme that reduced time-to-treatment for gastrointestinal cancer patients by 20% through coordinated multidisciplinary touchpoints.</p>
+            </article>
+            <article class="project-card">
+              <span>2024</span>
+              <h4>Endoscopy Training Academy</h4>
+              <p>Authored competency curricula and simulation workshops adopted across gastroenterology and surgical teams to standardise advanced endoscopic skills.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="education">
+          <h2 id="education">Education</h2>
+          <div class="education-grid">
+            <div class="education-item">
+              <h4>MSc, Advanced Oncology</h4>
+              <div class="meta">University of Ulm, Germany · Oct 2022 – Jun 2025</div>
+              <p>Thesis focused on optimising endoscopic management protocols for hepatobiliary tumours.</p>
+            </div>
+            <div class="education-item">
+              <h4>MBChB, Medicine and Surgery</h4>
+              <div class="meta">Kwame Nkrumah University of Science and Technology, Ghana · Sep 2009 – Jun 2012</div>
+            </div>
+            <div class="education-item">
+              <h4>BSc, Human Biology</h4>
+              <div class="meta">Kwame Nkrumah University of Science and Technology, Ghana · Aug 2006 – Sep 2009</div>
+            </div>
+            <div class="education-item">
+              <h4>Senior Secondary School Certificate</h4>
+              <div class="meta">Presbyterian Boys' Senior High School (PRESEC), Ghana · Sep 2002 – Jul 2005</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="research">
+          <h2 id="research">Research &amp; Publications</h2>
+          <p>
+            Research interests span gastrointestinal oncology, advanced endoscopic imaging, and the integration of digital health
+            within oncologic care. Publications, case series, and conference presentations are available on request.
+          </p>
+        </section>
+
+        <footer>
+          References and extended publication list available upon request. Updated June 2025.
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>
