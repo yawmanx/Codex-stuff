@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Happy Maths – Add & Subtract</title>
+<style>
+  :root{
+    --bg:#f7fbff;
+    --card:#ffffff;
+    --ink:#1f2a44;
+    --muted:#667394;
+    --accent:#3aa6ff;
+    --accent-2:#00c389;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji";
+    background:linear-gradient(180deg,#eef7ff, #fdfefe 40%, #f6fff9);
+    color:var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:14px;
+  }
+  .app{max-width:900px;width:100%; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;}
+  .top{
+    display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    padding:8px 10px; border-bottom:1px dashed #e6edf7;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+  .pill{font-size:12px; color:#fff; background:linear-gradient(90deg,var(--accent),#7ed5ff); padding:6px 10px; border-radius:999px}
+  .stars{display:flex; align-items:center; gap:8px; font-weight:700}
+  .stars .count{font-size:20px; color:#f59e0b}
+  .controls{display:flex; flex-wrap:wrap; gap:8px}
+  .btn,.seg label{
+    border:1px solid #d9e6f5; background:#fbfeff; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer;
+  }
+  .btn.primary{background:linear-gradient(90deg,var(--accent-2),#78ffd2); color:#053b2e; border:none}
+  .btn.warn{background:#fff0f0; border-color:#ffd6d6; color:#b42318}
+  .seg{display:flex; background:#f4f9ff; border:1px solid #d9e6f5; border-radius:12px; overflow:hidden}
+  .seg input{display:none}
+  .seg label{padding:10px 12px; border:0; user-select:none}
+  .seg input:checked + label{background:#e9f5ff; color:#035fb7}
+  .main{display:grid; grid-template-columns:1.1fr .9fr; gap:14px; padding:12px}
+  @media (max-width:800px){.main{grid-template-columns:1fr}}
+  .card{background:var(--card); border:1px solid #e6edf7; border-radius:16px; box-shadow:var(--shadow); padding:14px}
+  .problem{
+    font-size: clamp(48px, 10vw, 80px); text-align:center; font-weight:900; letter-spacing:1px;
+  }
+  .muted{color:var(--muted); font-size:14px}
+  .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:10px}
+  .key{
+    font-size:28px; padding:18px; border-radius:14px; background:#f6fbff; border:1px solid #d9e6f5; text-align:center; font-weight:800; cursor:pointer;
+  }
+  .key.action{font-size:16px}
+  .screen{
+    font-size:44px; text-align:center; font-weight:800; background:#f8fcff; border:1px solid #d9e6f5; padding:10px; border-radius:14px; min-height:60px;
+  }
+  .canvas-wrap{position:relative}
+  canvas{
+    width:100%; height:340px; border:1px dashed #d7e3f3; border-radius:14px; background:#ffffff;
+    touch-action:none; /* critical for iPad Pencil */
+  }
+  .ghost{
+    position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; opacity:.17; filter:contrast(1.1);
+  }
+  .hint{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .ok{color:var(--good); font-weight:800}
+  .no{color:var(--bad); font-weight:800}
+  .footer{padding:10px 12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; color:var(--muted)}
+  .hidden{display:none}
+  .chips{display:flex; gap:8px; flex-wrap:wrap}
+  .chip{background:#f1fbf7; border:1px solid #d1f7e4; color:#135c3b; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700}
+  .confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden}
+</style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Happy Maths app">
+    <div class="top">
+      <div class="brand">
+        <span class="pill">Happy Maths</span>
+        <span class="muted">Add & Subtract (Age 5)</span>
+      </div>
+      <div class="stars" aria-live="polite">⭐ Stars: <span class="count" id="stars">0</span></div>
+      <div class="controls">
+        <div class="seg" role="radiogroup" aria-label="Mode">
+          <input id="m-add" type="radio" name="op" checked><label for="m-add">Add</label>
+          <input id="m-sub" type="radio" name="op"><label for="m-sub">Subtract</label>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Answer Mode">
+          <input id="a-pad" type="radio" name="ans" checked><label for="a-pad">Number Pad</label>
+          <input id="a-trace" type="radio" name="ans"><label for="a-trace">Trace</label>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Max Number">
+          <input id="mx10" type="radio" name="mx" checked><label for="mx10">Max 10</label>
+          <input id="mx20" type="radio" name="mx"><label for="mx20">Max 20</label>
+        </div>
+        <button class="btn primary" id="newQ">New Problem</button>
+        <button class="btn warn" id="resetStars" title="Reset star counter">Reset Stars</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- Left: Problem & Number Pad -->
+      <div class="card" aria-label="Problem and keypad">
+        <div class="problem" id="problem" aria-live="polite">2 + 3 = ?</div>
+        <div class="chips"><span class="chip" id="feedback">Have a go! 😊</span></div>
+        <div style="height:10px"></div>
+        <div class="screen" id="screen" aria-label="Your answer"></div>
+        <div class="pad" aria-label="Number pad">
+          <div class="key">1</div><div class="key">2</div><div class="key">3</div>
+          <div class="key">4</div><div class="key">5</div><div class="key">6</div>
+          <div class="key">7</div><div class="key">8</div><div class="key">9</div>
+          <div class="key action" data-act="clear">Clear</div><div class="key">0</div><div class="key action" data-act="submit">Submit</div>
+        </div>
+      </div>
+
+      <!-- Right: Trace Mode Canvas -->
+      <div class="card" aria-label="Trace answer area">
+        <div class="hint">
+          <div class="muted">Trace the answer with your finger or Apple Pencil.</div>
+          <div>
+            <button class="btn" id="clearCanvas">Clear</button>
+            <button class="btn" id="checkTrace">Check Trace</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="draw" width="800" height="340" aria-label="Drawing canvas"></canvas>
+          <!-- Ghost (faint) answer to trace -->
+          <canvas id="ghost" class="ghost" width="800" height="340" aria-hidden="true"></canvas>
+        </div>
+        <div class="chips"><span class="chip">Tip: switch to “Trace” above; the faint number is the correct answer.</span></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>All offline. Pencil-friendly. No ads. ❤️</span>
+    </div>
+  </div>
+
+  <canvas id="confetti" class="confetti"></canvas>
+
+<script>
+/* ---------------- State & helpers ---------------- */
+const el = id => document.getElementById(id);
+const $problem = el('problem');
+const $screen = el('screen');
+const $stars = el('stars');
+const $feedback = el('feedback');
+const $draw = el('draw');
+const $ghost = el('ghost');
+const $answerCard = document.querySelector('[aria-label="Problem and keypad"]');
+const $padGrid = $answerCard.querySelector('.pad');
+const $traceCard = $draw.closest('.card');
+
+function setVisibility(element, visible){
+  if(!element) return;
+  element.classList.toggle('hidden', !visible);
+  if(visible){
+    element.removeAttribute('hidden');
+    element.removeAttribute('aria-hidden');
+    element.removeAttribute('inert');
+  }else{
+    element.setAttribute('hidden', '');
+    element.setAttribute('aria-hidden', 'true');
+    element.setAttribute('inert', '');
+  }
+}
+
+let stars = parseInt(localStorage.getItem('happy-maths-stars')||'0',10);
+$stars.textContent = String(stars);
+
+const state = {
+  a:0, b:0, op:'+',
+  answer:0,
+  max:10
+};
+
+/* Speech synthesis (simple, iOS-friendly) */
+function say(text){
+  try{
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0; u.pitch = 1.0; u.lang = 'en-US';
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* Confetti mini */
+const confettiCanvas = el('confetti');
+const cCtx = confettiCanvas.getContext('2d');
+function resizeConfetti(){
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+resizeConfetti(); addEventListener('resize', resizeConfetti);
+
+let particles=[];
+function fireConfetti(){
+  particles = [];
+  for(let i=0;i<120;i++){
+    particles.push({
+      x: Math.random()*confettiCanvas.width,
+      y: -10,
+      vx: (Math.random()-0.5)*2,
+      vy: 2+Math.random()*3,
+      s: 4+Math.random()*4,
+      life: 60+Math.random()*60
+    });
+  }
+}
+function confettiLoop(){
+  cCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; p.life--;
+    cCtx.fillRect(p.x,p.y,p.s,p.s);
+  });
+  particles=particles.filter(p=>p.life>0);
+  requestAnimationFrame(confettiLoop);
+}
+confettiLoop();
+
+/* --------------- Problem generation --------------- */
+function newProblem(){
+  state.op = document.getElementById('m-sub').checked?'-':'+';
+  state.max = document.getElementById('mx20').checked?20:10;
+
+  const max = state.max;
+  let a = Math.floor(Math.random()*(max+1));
+  let b = Math.floor(Math.random()*(max+1));
+
+  if(state.op==='+' ){
+    while(a+b>max) {a = Math.floor(Math.random()*(max+1)); b = Math.floor(Math.random()*(max+1));}
+    state.answer = a+b;
+  }else{
+    if(a<b){const t=a;a=b;b=t;} // avoid negatives
+    state.answer = a-b;
+  }
+  state.a=a; state.b=b;
+
+  $problem.textContent = `${a} ${state.op} ${b} = ?`;
+  $screen.textContent = '';
+  $feedback.textContent = 'Have a go! 😊';
+
+  drawGhostAnswer(); // update trace outline
+  clearCanvas();
+}
+newProblem();
+
+/* --------------- Number pad ---------------- */
+document.querySelectorAll('.key').forEach(k=>{
+  k.addEventListener('click', ()=>{
+    const act = k.dataset.act;
+    if(!act){
+      $screen.textContent = ($screen.textContent + k.textContent).slice(0,3);
+    }else if(act==='clear'){
+      $screen.textContent = '';
+    }else if(act==='submit'){
+      submitAnswer();
+    }
+  });
+});
+function submitAnswer(){
+  const val = parseInt($screen.textContent || 'NaN',10);
+  if(Number.isNaN(val)){shake($screen); $feedback.textContent='Type an answer!'; return;}
+  if(val===state.answer){
+    celebrate();
+  }else{
+    $feedback.textContent='Try again! 👀';
+    shake($screen);
+  }
+}
+function shake(node){
+  node.style.transform='translateX(0)';
+  node.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}], {duration:250});
+}
+
+/* --------------- Stars & celebration --------------- */
+function celebrate(){
+  stars++; localStorage.setItem('happy-maths-stars', String(stars));
+  $stars.textContent = String(stars);
+  $feedback.textContent='Great job! ⭐';
+  say('Great job!');
+  fireConfetti();
+  setTimeout(newProblem, 1000);
+}
+document.getElementById('resetStars').addEventListener('click', ()=>{
+  stars=0; localStorage.setItem('happy-maths-stars','0'); $stars.textContent='0';
+});
+
+/* --------------- Controls --------------- */
+document.getElementById('newQ').addEventListener('click', newProblem);
+document.getElementById('mx10').addEventListener('change', newProblem);
+document.getElementById('mx20').addEventListener('change', newProblem);
+document.getElementById('m-add').addEventListener('change', newProblem);
+document.getElementById('m-sub').addEventListener('change', newProblem);
+
+/* --------------- Trace mode: drawing --------------- */
+const dCtx = $draw.getContext('2d', {willReadFrequently:true});
+let drawing=false, last=null;
+
+function setStroke(){
+  dCtx.lineCap='round'; dCtx.lineJoin='round'; dCtx.lineWidth=14; dCtx.strokeStyle='#0f172a';
+}
+
+function pointerPos(e){
+  const r = $draw.getBoundingClientRect();
+  return {x:(e.clientX - r.left) * ($draw.width/r.width), y:(e.clientY - r.top) * ($draw.height/r.height)};
+}
+
+function start(e){
+  e.preventDefault(); drawing=true; last=pointerPos(e);
+}
+function move(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const p = pointerPos(e);
+  setStroke();
+  dCtx.beginPath(); dCtx.moveTo(last.x,last.y); dCtx.lineTo(p.x,p.y); dCtx.stroke();
+  last=p;
+}
+function end(e){ drawing=false; last=null; }
+
+['pointerdown','mousedown','touchstart'].forEach(ev=> $draw.addEventListener(ev,start,{passive:false}));
+['pointermove','mousemove','touchmove'].forEach(ev=> $draw.addEventListener(ev,move,{passive:false}));
+['pointerup','pointercancel','mouseup','mouseleave','touchend','touchcancel'].forEach(ev=> $draw.addEventListener(ev,end,{passive:false}));
+
+function clearCanvas(){
+  dCtx.clearRect(0,0,$draw.width,$draw.height);
+}
+
+/* --------------- Ghost (faint) answer drawing --------------- */
+/* We render large digits as vector paths to the ghost canvas,
+   then the child traces over them on the main canvas. */
+const gCtx = $ghost.getContext('2d');
+
+const digitPaths = {
+  // Simple digit renderer using canvas paths
+  // Each function draws the digit centered in a given rect
+  draw(n, ctx, x, y, w, h){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#000';
+    ctx.lineCap='round'; ctx.lineJoin='round';
+
+    const s = Math.min(w,h);
+    const cx = w/2, cy = h/2;
+    const r = s*0.38;
+
+    ctx.beginPath();
+    switch(n){
+      case 0:
+        ctx.ellipse(cx,cy,r,r*1.25,0,0,Math.PI*2);
+        break;
+      case 1:
+        ctx.moveTo(cx, cy - r*1.1);
+        ctx.lineTo(cx, cy + r*1.1);
+        break;
+      case 2:
+        ctx.moveTo(cx-r,cy-r);
+        ctx.quadraticCurveTo(cx+r,cy-r,cx+r,cy);
+        ctx.quadraticCurveTo(cx+r,cy+r,cx-r,cy+r);
+        ctx.lineTo(cx+r,cy+r);
+        break;
+      case 3:
+        ctx.moveTo(cx-r*0.9,cy-r);
+        ctx.quadraticCurveTo(cx+r,cy-r,cx,cy);
+        ctx.quadraticCurveTo(cx+r,cy+r,cx-r*0.9,cy+r);
+        break;
+      case 4:
+        ctx.moveTo(cx+r*0.6,cy+r*1.1);
+        ctx.lineTo(cx+r*0.6,cy-r*1.1);
+        ctx.moveTo(cx-r*0.8,cy+r*0.3);
+        ctx.lineTo(cx+r*0.6,cy+r*0.3);
+        ctx.lineTo(cx-r*0.2,cy-r*1.0);
+        break;
+      case 5:
+        ctx.moveTo(cx+r*0.8,cy-r);
+        ctx.lineTo(cx-r*0.8,cy-r);
+        ctx.lineTo(cx-r*0.8,cy);
+        ctx.quadraticCurveTo(cx,cy-r*0.1,cx+r*0.8,cy+r*0.9);
+        break;
+      case 6:
+        ctx.moveTo(cx+r*0.8,cy-r*0.8);
+        ctx.quadraticCurveTo(cx-r*0.8,cy-r*0.8,cx-r*0.8,cy);
+        ctx.quadraticCurveTo(cx-r*0.8,cy+r*0.8,cx,cy+r*0.8);
+        ctx.quadraticCurveTo(cx+r*0.8,cy+r*0.2,cx+r*0.1,cy-r*0.6);
+        break;
+      case 7:
+        ctx.moveTo(cx-r*0.9,cy-r);
+        ctx.lineTo(cx+r*0.9,cy-r);
+        ctx.lineTo(cx,cy+r*1.1);
+        break;
+      case 8:
+        ctx.ellipse(cx,cy-r*0.5,r*0.7,r*0.55,0,0,Math.PI*2);
+        ctx.moveTo(cx+r*0.7,cy+r*0.9);
+        ctx.ellipse(cx,cy+r*0.7,r*0.9,r*0.75,0,0,Math.PI*2);
+        break;
+      case 9:
+        ctx.moveTo(cx-r*0.2,cy-r*0.9);
+        ctx.quadraticCurveTo(cx+r*0.8,cy-r*0.9,cx+r*0.8,cy);
+        ctx.quadraticCurveTo(cx+r*0.8,cy+r*0.8,cx,cy+r*0.8);
+        ctx.quadraticCurveTo(cx-r*0.6,cy+r*0.2,cx+r*0.3,cy-r*0.6);
+        break;
+      default:
+        // Two digits will be drawn sequentially; handled outside
+        break;
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+function drawGhostAnswer(){
+  gCtx.clearRect(0,0,$ghost.width,$ghost.height);
+  const ans = String(state.answer);
+  gCtx.save();
+  gCtx.globalAlpha = 1; // base alpha; the canvas itself has low CSS opacity
+  gCtx.strokeStyle='#000'; gCtx.lineWidth=10; gCtx.lineCap='round'; gCtx.lineJoin='round';
+
+  const totalW = $ghost.width, totalH = $ghost.height;
+  const marginX = 60, marginY = 40;
+  const boxW = (totalW - marginX*2) / (ans.length);
+  const boxH = totalH - marginY*2;
+
+  for(let i=0;i<ans.length;i++){
+    const d = parseInt(ans[i],10);
+    digitPaths.draw(d, gCtx, marginX + i*boxW, marginY, boxW, boxH);
+  }
+  gCtx.restore();
+}
+
+/* --------------- Trace scoring --------------- */
+/* Simple coverage: count how many ghost pixels (stroke) are overlapped by drawn pixels. */
+function scoreTrace(){
+  // Get ghost stroke mask
+  const gi = gCtx.getImageData(0,0,$ghost.width,$ghost.height).data;
+  const di = dCtx.getImageData(0,0,$draw.width,$draw.height).data;
+
+  let ghostCount=0, covered=0;
+  // consider a ghost pixel where alpha>0 and brightness < some threshold (since stroke is black)
+  for(let i=0;i<gi.length;i+=4){
+    const a = gi[i+3];
+    if(a>30){ // part of ghost stroke
+      ghostCount++;
+      const dA = di[i+3];
+      if(dA>30){ covered++; }
+    }
+  }
+  const pct = ghostCount? (covered/ghostCount)*100 : 0;
+  return pct;
+}
+
+document.getElementById('checkTrace').addEventListener('click', ()=>{
+  const pct = scoreTrace();
+  if(pct >= 55){ // ~55% of stroke covered counts as success
+    celebrate();
+  }else{
+    $feedback.textContent = `Keep tracing… ${pct.toFixed(0)}%`;
+    say('Keep tracing');
+  }
+});
+
+document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+
+/* --------------- Answer mode visibility --------------- */
+function updateAnswerMode(){
+  const padOn = document.getElementById('a-pad').checked;
+  setVisibility($padGrid, padOn);
+  setVisibility($screen, padOn);
+  setVisibility($traceCard, !padOn);
+}
+document.getElementById('a-pad').addEventListener('change', updateAnswerMode);
+document.getElementById('a-trace').addEventListener('change', updateAnswerMode);
+updateAnswerMode();
+
+/* --------------- Accessibility & iOS quirks --------------- */
+document.addEventListener('gesturestart', e=>e.preventDefault()); // prevent pinch zoom bounce on canvas
+</script>
+</body>
+</html>
