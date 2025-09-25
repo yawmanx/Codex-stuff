@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktive SOP – Innere Medizin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .sop-section {
+            transition: max-height 0.5s ease-in-out, box-shadow 0.3s;
+            overflow: hidden;
+            max-height: 1000px;
+        }
+        .sop-section.collapsed {
+            max-height: 5rem;
+        }
+        .sop-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .sop-item.completed {
+            background-color: #e6fffa;
+            border-left-color: #38b2ac;
+        }
+        .sop-item.completed .main-text {
+            color: #2d3748;
+        }
+        .sop-item .icon {
+            transition: transform 0.3s ease;
+        }
+        .sop-item.completed .icon {
+            transform: scale(1.2);
+        }
+        .comment {
+            font-style: italic;
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+        .comment-warning {
+            color: #c53030;
+            font-weight: 600;
+        }
+        .section-header {
+            cursor: pointer;
+        }
+        .section-header .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .sop-section.collapsed .section-header .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .details-input {
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+        .sop-item.completed .details-input {
+            max-height: 12rem;
+            opacity: 1;
+        }
+        .details-input textarea, .details-input input {
+            color: #1a202c;
+        }
+        #arztbriefModal {
+            display: none;
+        }
+        .modal-content {
+            animation: slide-down 0.5s ease;
+        }
+        @keyframes slide-down {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-5xl mx-auto space-y-6">
+        <header class="text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Interaktive SOP</h1>
+            <p id="selectedCaseTitle" class="text-lg text-gray-600">Auswahl eines internistischen Falls</p>
+            <p id="selectedCaseSummary" class="mt-1 text-base text-gray-500"></p>
+        </header>
+
+        <section class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-3">Fall auswählen</h2>
+            <p class="text-sm text-gray-600 mb-4">Wählen Sie eine der zehn häufigsten internistischen Aufnahmediagnosen aus, um die strukturierte Checkliste zu nutzen.</p>
+            <select id="caseSelect" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"></select>
+        </section>
+
+        <main id="caseContent" class="space-y-6"></main>
+
+        <footer class="text-center pt-4">
+            <button id="generateBriefBtn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+                Arztbrief generieren
+            </button>
+        </footer>
+    </div>
+
+    <div id="arztbriefModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-full overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Generierter Arztbrief</h2>
+                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-md">
+                    <textarea id="arztbriefText" class="w-full h-96 p-2 border border-gray-300 rounded-md font-mono text-sm"></textarea>
+                </div>
+                <div class="mt-4 flex justify-end space-x-3">
+                    <button id="copyBtn" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-600 transition">
+                        Text kopieren
+                    </button>
+                    <button id="closeModalBtn2" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-600 transition">
+                        Schließen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const headerIcons = {
+            clock: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            ward: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
+            checklist: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>'
+        };
+
+        const greetingText = "Sehr geehrte Kollegin, sehr geehrter Kollege,\n\nwir berichten über den stationären Aufenthalt von Patient/in [NAME], geb. am [DATUM], in unserer Abteilung vom [DATUM] bis [DATUM].";
+
+        const caseDefinitions = [
+            {
+                id: 'copd',
+                title: 'Akut exazerbierte COPD',
+                summary: 'Management einer akut exazerbierten chronisch-obstruktiven Lungenerkrankung.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'ZNA – Erstkontakt',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Untersuchung',
+                                comment: 'Dyspnoe, Husten, Sputum (Anthonisen-Kriterien), Giemen, Einsatz Atemhilfsmuskulatur.',
+                                placeholder: 'z.B. Seit 2 Tagen zunehmende Dyspnoe, gelbliches Sputum.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Die Anamnese ergab ${detail}.` : '- Die Anamnese ergab eine akute Verschlechterung der Atemsituation.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'bga',
+                                title: 'Blutgasanalyse (BGA)',
+                                comment: 'Hypoxämie? Hyperkapnie? pH?',
+                                placeholder: 'z.B. pO2 58mmHg, pCO2 49mmHg, pH 7.33 unter 2L O2',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- Die initiale BGA zeigte ${detail}.` : '- Die initiale BGA zeigte eine Hypoxämie mit beginnender Hyperkapnie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'diagnostik',
+                                title: 'Labor, EKG, Röntgen-Thorax',
+                                comment: 'Infektzeichen? Kardiale Ischämie? Infiltrat, Pneumothorax?',
+                                placeholder: 'z.B. CRP 112 mg/l, Rö-Thx: Infiltratfrei',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Weitere Diagnostik ergab: ${detail}.` : '- Weitere Diagnostik zeigte keine zusätzliche Pathologie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'therapie_initial',
+                                title: 'Initiale Therapie',
+                                comment: 'O2-Gabe (Ziel-SpO2 88-92%), SABA/SAMA, system. Steroide.',
+                                placeholder: 'z.B. O2 2L/min, Salbutamol/Ipratropium vernebelt, 40mg Prednisolon i.v.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Initial erfolgte eine Therapie mit ${detail}.` : '- Es wurde leitliniengerecht eine bronchodilatierende und steroidale Therapie eingeleitet.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Station – Therapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'therapie_station',
+                                title: 'Weiterführende Therapie',
+                                comment: 'Bronchodilatatoren & Steroide fortführen.',
+                                placeholder: 'z.B. Prednisolon 40mg p.o., Vernebelung bei Bedarf.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Stationär führten wir die Therapie mit ${detail} fort.` : '- Stationär wurde die bronchodilatierende Therapie fortgesetzt.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'antibiotika',
+                                title: 'Antibiotika',
+                                comment: 'Bei 2/3 Anthonisen-Kriterien (purulentes Sputum obligat).',
+                                placeholder: 'z.B. Amoxicillin/Clavulansäure i.v. für 7 Tage.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Es wurde eine antibiotische Therapie mit ${detail} begonnen.` : '- Eine antibiotische Therapie wurde nach Anthonisen-Kriterien initiiert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'niv',
+                                title: 'Nicht-invasive Beatmung (NIV)',
+                                comment: 'Bei respiratorischer Azidose (pH < 7.35) und Hyperkapnie.',
+                                placeholder: 'z.B. NIV-Therapie für 12h, BGA-Kontrollen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Wegen Hyperkapnie führten wir eine NIV durch (${detail}).` : '- Bei respiratorischer Azidose erfolgte eine passagere NIV-Therapie.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Vor Entlassung',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlass_kriterien',
+                                title: 'Entlasskriterien erfüllt',
+                                comment: 'Klinische Stabilität >24h, BGA stabil, Inhalatormedikation etabliert.',
+                                placeholder: 'z.B. Seit 48h ohne Fieber, SABA-Bedarf < 4x/Tag.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Die Entlasskriterien waren erfüllt (${detail}).` : '- Die Entlassungskriterien waren erfüllt.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'entlass_medikation',
+                                title: 'Entlassmedikation',
+                                comment: 'Optimierung der inhalativen Dauertherapie.',
+                                placeholder: 'z.B. LAMA/LABA/ICS-Tripletherapie, Prednisolon p.o. für 5 Tage gesamt.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Die Entlassmedikation umfasst ${detail}.` : '- Die inhalative Dauertherapie wurde optimiert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'schulung',
+                                title: 'Patientenschulung',
+                                comment: 'Inhalator-Technik, Aktionsplan, Nikotinkarenz.',
+                                placeholder: 'z.B. Inhaler-Technik demonstriert und überprüft, Aktionsplan ausgehändigt.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Patientenschulung zu ${detail} wurde durchgeführt.` : '- Eine Patientenschulung zur Inhalationstechnik und Exazerbationsprophylaxe erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akut exazerbierter COPD',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const anamText = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte notfallmäßig bei bekannter COPD (GOLD-Stadium [X]) aufgrund von ${anam.value}.` : 'Die Aufnahme erfolgte notfallmäßig bei einer akuten Exazerbation der bekannten COPD.';
+                        return `${greetingText}\n\n${anamText}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['bga', 'diagnostik'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['therapie_initial', 'therapie_station', 'antibiotika', 'niv'] },
+                        { title: 'ENTLASSUNG & WEITERVERSORGUNG', keys: ['entlass_kriterien', 'entlass_medikation', 'schulung'] }
+                    ],
+                    epikrise: () => 'Zusammenfassend behandelten wir eine akut-infektexazerbierte COPD mit guter klinischer Stabilisierung unter der eingeleiteten Therapie.',
+                    followUp: details => {
+                        const med = details.entlass_medikation;
+                        const schul = details.schulung;
+                        let text = 'Folgendes Vorgehen wurde vereinbart:\n';
+                        if (med && med.completed) {
+                            text += med.value ? `- Fortführung der inhalativen Medikation gemäß: ${med.value}.\n` : '- Fortführung der optimierten inhalativen Dauertherapie.\n';
+                        }
+                        if (schul && schul.completed) {
+                            text += schul.value ? `- Umsetzung der Schulungsinhalte zu ${schul.value}.\n` : '- Umsetzung der besprochenen Patientenschulung.\n';
+                        }
+                        text += '- Hausärztliche Kontrolle innerhalb der nächsten Woche sowie pneumologische Vorstellung in 4–6 Wochen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'acs',
+                title: 'Akutes Koronarsyndrom (NSTEMI/STEMI)',
+                summary: 'Strukturierte Versorgung bei akuten Brustschmerzen mit kardialem Ischämieverdacht.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Notaufnahme',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Risikoprofil',
+                                comment: 'Schmerzcharakter, Risikofaktoren, Vorerkrankungen.',
+                                placeholder: 'z.B. retrosternaler Druck seit 45 Min., Hypertonie, Nikotin.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Die Anamnese ergab ${detail}.` : '- Die Anamnese zeigte einen typischen Thoraxschmerz mit kardiovaskulären Risikofaktoren.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'ekg',
+                                title: 'EKG & Monitoring',
+                                comment: 'ST-Hebungen? Arrhythmien? Monitoring etablieren.',
+                                placeholder: 'z.B. ST-Hebungen V2-V5, Monitoring etabliert.',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- EKG/Monitoring: ${detail}.` : '- Im EKG zeigten sich ischämische Veränderungen unter kontinuierlichem Monitoring.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor (Troponin, CK-MB)',
+                                comment: 'Serielle kardiale Marker, Basislabor.',
+                                placeholder: 'z.B. hs-Troponin T 89 ng/l steigend, CK-MB 32 U/l.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Laborbefunde: ${detail}.` : '- Die kardialen Biomarker waren dynamisch erhöht.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikation_initial',
+                                title: 'Initiale medikamentöse Therapie',
+                                comment: 'ASS, P2Y12-Hemmer, Heparin, O2/Analgesie nach Bedarf.',
+                                placeholder: 'z.B. ASS 300mg, Ticagrelor 180mg, Heparin-Bolus 5000 IE.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Initiale Therapie: ${detail}.` : '- Es erfolgte eine leitliniengerechte antithrombotische Initialtherapie.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Intervention & Station',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'reperfusion',
+                                title: 'Koronarangiographie/Reperfusion',
+                                comment: 'PCI/Thrombolyse, betroffene Gefäße dokumentieren.',
+                                placeholder: 'z.B. Primäre PCI der LAD mit DES, TIMI III.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Reperfusionsstrategie: ${detail}.` : '- Es erfolgte eine invasive Revaskularisation der culprit Läsion.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'antithrombotisch',
+                                title: 'Antithrombotische Therapie',
+                                comment: 'DAPT, Antikoagulation, Dauer planen.',
+                                placeholder: 'z.B. DAPT mit ASS/Ticagrelor für 12 Monate, Enoxaparin bis Mobilisation.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Antithrombotische Therapie: ${detail}.` : '- Es wurde eine duale Plättchenhemmung plus Antikoagulation etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'monitoring',
+                                title: 'Stationäre Überwachung',
+                                comment: 'Telemetrie, Echo, Komplikationsscreening.',
+                                placeholder: 'z.B. Telemetrie 48h, Echo: EF 45%, keine Komplikationen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Stationärer Verlauf: ${detail}.` : '- Der stationäre Verlauf blieb unter Monitoring stabil.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Entlassung',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'sekundaerpraevention',
+                                title: 'Sekundärprävention & Medikation',
+                                comment: 'Statin, Betablocker, ACE-Hemmer, Lifestyle.',
+                                placeholder: 'z.B. ASS 100mg, Ticagrelor 90mg 2x/d, Atorvastatin 80mg, Bisoprolol 5mg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Sekundärprävention: ${detail}.` : '- Sekundärprävention mit leitliniengerechter Dauermedikation etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'rehabilitation',
+                                title: 'Rehabilitation & Nachsorge',
+                                comment: 'Kardiologische Reha, Belastungstest, Kontrolltermine.',
+                                placeholder: 'z.B. Anschlussheilbehandlung beantragt, Kontrolltermin in 4 Wochen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorgeplanung: ${detail}.` : '- Eine kardiologische Rehabilitation sowie frühe Nachsorge wurden veranlasst.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'aufklaerung',
+                                title: 'Patientenaufklärung',
+                                comment: 'Warnsymptome, Medikamentenadhärenz, Lifestyle.',
+                                placeholder: 'z.B. Aufklärung zu Compliance, Nikotinkarenz, Reha-Teilnahme.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Aufklärung zu ${detail} durchgeführt.` : '- Umfassende Aufklärung zu Medikation, Reha und Lebensstil erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akutem Koronarsyndrom',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte notfallmäßig bei thorakalem Schmerzsyndrom mit ${anam.value}.` : 'Die Aufnahme erfolgte notfallmäßig bei akutem Thoraxschmerz mit Verdacht auf ein Koronarsyndrom.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['ekg', 'labor'] },
+                        { title: 'THERAPIE UND INTERVENTION', keys: ['medikation_initial', 'reperfusion', 'antithrombotisch', 'monitoring'] },
+                        { title: 'ENTLASSUNG & SEKUNDÄRPRÄVENTION', keys: ['sekundaerpraevention', 'rehabilitation', 'aufklaerung'] }
+                    ],
+                    epikrise: () => 'Zusammenfassend wurde ein akutes Koronarsyndrom erfolgreich revaskularisiert; der weitere Verlauf blieb hämodynamisch stabil.',
+                    followUp: details => {
+                        let text = 'Empfohlenes Prozedere:\n';
+                        const rehab = details.rehabilitation;
+                        const sek = details.sekundaerpraevention;
+                        if (sek && sek.completed) {
+                            text += sek.value ? `- Fortführung der Sekundärprävention: ${sek.value}.\n` : '- Fortführung der etablierten Sekundärprävention.\n';
+                        }
+                        if (rehab && rehab.completed) {
+                            text += rehab.value ? `- Umsetzung der Nachsorge/Reha: ${rehab.value}.\n` : '- Teilnahme an der initiierten kardiologischen Rehabilitation.\n';
+                        }
+                        text += '- Frühzeitige hausärztliche Kontrolle (innerhalb 7 Tage) sowie kardiologische Nachkontrolle in 4 Wochen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'heart_failure',
+                title: 'Akut dekompensierte Herzinsuffizienz',
+                summary: 'Therapie einer kardialen Dekompensation mit Dyspnoe und Volumenüberlastung.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Aufnahme & Ersteinschätzung',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & klinische Untersuchung',
+                                comment: 'Dyspnoe, Orthopnoe, Gewicht, Ödeme.',
+                                placeholder: 'z.B. Orthopnoe, 3 kg Gewichtszunahme, beidseitige Unterschenkelödeme.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinisch zeigte sich ${detail}.` : '- Klinisch zeigte sich eine ausgeprägte Volumenüberlastung mit Dyspnoe.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor & BNP',
+                                comment: 'BNP/NT-proBNP, Nierenfunktion, Elektrolyte.',
+                                placeholder: 'z.B. NT-proBNP 4200 pg/ml, Kreatinin 1.5 mg/dl.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Laborbefunde: ${detail}.` : '- Laborchemisch zeigten sich erhöhte kardiale Marker mit moderater Nierenfunktionsverschlechterung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'bildgebung',
+                                title: 'Bildgebung/Echo/Röntgen',
+                                comment: 'Herzgröße, Pumpfunktion, Pleuraergüsse.',
+                                placeholder: 'z.B. Echo: EF 30%, dilatiertes LV; Röntgen: Lungenstauung.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Bildgebung: ${detail}.` : '- Die Bildgebung zeigte eine reduzierte linksventrikuläre Funktion mit pulmonaler Stauung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'initial_therapie',
+                                title: 'Initiale Therapie',
+                                comment: 'Sauerstoff, Schleifendiuretika i.v., Nitrate, Morphin nach Bedarf.',
+                                placeholder: 'z.B. Furosemid 40mg i.v., O2 4L/min, Nitrospray.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Initialtherapie: ${detail}.` : '- Es wurde eine aggressive diuretische und symptomatische Therapie eingeleitet.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Stationäre Behandlung',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'fluid_management',
+                                title: 'Volumen- & Gewichtsmanagement',
+                                comment: 'Bilanzierung, Gewichtskontrolle, Diuretikaanpassung.',
+                                placeholder: 'z.B. tägliche Bilanzierung, -3kg, Diuretika auf 2x40mg Furosemid.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Volumenmanagement: ${detail}.` : '- Unter konsequenter Entwässerung kam es zu deutlicher Gewichtssenkung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikation',
+                                title: 'Optimierung der Herzinsuffizienzmedikation',
+                                comment: 'ACE/ARNI, Betablocker, MRA, SGLT2i.',
+                                placeholder: 'z.B. Sacubitril/Valsartan 24/26mg, Bisoprolol 2.5mg, Spironolacton 25mg, Empagliflozin 10mg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Medikation optimiert: ${detail}.` : '- Die leitliniengerechte Herzinsuffizienztherapie wurde optimiert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'monitoring',
+                                title: 'Monitoring & Diagnostik',
+                                comment: 'Telemetrie, Laborkontrollen, Echo-Kontrolle.',
+                                placeholder: 'z.B. Telemetrie ohne Arrhythmien, Kreatinin stabil, Echo unverändert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Monitoring: ${detail}.` : '- Unter Monitoring blieb der stationäre Verlauf komplikationslos.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Entlassmanagement',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlass_kriterien',
+                                title: 'Entlasskriterien',
+                                comment: 'Klinisch stabil, kein Stauungszeichen, Gewicht stabil.',
+                                placeholder: 'z.B. Euvolämie, keine Orthopnoe, Belastung möglich.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlasskriterien: ${detail}.` : '- Entlassung bei klinischer Euvolämie und Belastbarkeit.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikationsplan',
+                                title: 'Medikationsplan & Aufklärung',
+                                comment: 'Tagesplan, Gewichtskontrolle, Compliance.',
+                                placeholder: 'z.B. Tagesplan erstellt, Gewichtskontrolle täglich, Salzrestriktion erläutert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Medikations- und Selbstmanagementplan: ${detail}.` : '- Medikationsplan und Selbstmanagement (Gewicht, Salzrestriktion) wurden vermittelt.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'nachsorge',
+                                title: 'Nachsorgeorganisation',
+                                comment: 'Hausarzt, Herzinsuffizienz-Ambulanz, Pflegebedarf.',
+                                placeholder: 'z.B. Herzinsuffizienzambulanz in 2 Wochen, Hausarzt 1 Woche.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorge: ${detail}.` : '- Nachsorge über Hausarzt und spezialisierte Herzinsuffizienzambulanz organisiert.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akuter kardialer Dekompensation',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte wegen ${anam.value}.` : 'Die Aufnahme erfolgte wegen einer akuten kardialen Dekompensation mit Dyspnoe.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'bildgebung'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['initial_therapie', 'fluid_management', 'medikation', 'monitoring'] },
+                        { title: 'ENTLASSUNG & PLANUNG', keys: ['entlass_kriterien', 'medikationsplan', 'nachsorge'] }
+                    ],
+                    epikrise: () => 'Zusammenfassend stabilisierte sich die Herzinsuffizienz unter intensiver Diuretikatherapie und medikamentöser Optimierung.',
+                    followUp: details => {
+                        let text = 'Empfehlungen:\n';
+                        const plan = details.medikationsplan;
+                        const nachsorge = details.nachsorge;
+                        if (plan && plan.completed) {
+                            text += plan.value ? `- Umsetzung des Medikations- und Selbstmanagementplans: ${plan.value}.\n` : '- Konsequente Umsetzung des besprochenen Medikations- und Selbstmanagementplans.\n';
+                        }
+                        if (nachsorge && nachsorge.completed) {
+                            text += nachsorge.value ? `- Nachsorgetermine: ${nachsorge.value}.\n` : '- Vereinbarte Nachsorgetermine wahrnehmen.\n';
+                        }
+                        text += '- Gewichtskontrolle, Anpassung der Diuretika bei Bedarf sowie zeitnahe hausärztliche Vorstellung.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'pneumonia',
+                title: 'Community-acquired Pneumonie',
+                summary: 'Aufnahme und Therapie einer ambulant erworbenen Pneumonie.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Initialdiagnostik',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Untersuchung',
+                                comment: 'Husten, Fieber, Dyspnoe, Risikofaktoren.',
+                                placeholder: 'z.B. produktiver Husten, Fieber 38.7°C, Pleuritischer Schmerz.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinisch präsentierte sich ${detail}.` : '- Klinisch bestand ein Infektbild mit Fieber, Husten und Dyspnoe.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Laborbefunde',
+                                comment: 'CRP, Leukozyten, Prokalzitonin.',
+                                placeholder: 'z.B. CRP 142 mg/l, Leukozyten 15/nl.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Labor: ${detail}.` : '- Laborchemisch zeigten sich erhöhte Entzündungswerte.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'bildgebung',
+                                title: 'Bildgebung',
+                                comment: 'Röntgen oder CT Thorax.',
+                                placeholder: 'z.B. Rö-Thx: Infiltrat rechts basal lobär.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Bildgebung: ${detail}.` : '- Die Bildgebung bestätigte ein lobäres Infiltrat.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'score',
+                                title: 'Schweregradeinschätzung (CRB-65/CURB-65)',
+                                comment: 'Score zur Entscheidung stationär/Intensiv.',
+                                placeholder: 'z.B. CRB-65 = 2 (Verwirrung, RR 85 mmHg).',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Schweregradeinschätzung: ${detail}.` : '- Die Schweregradeinschätzung rechtfertigte eine stationäre Aufnahme.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Therapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'antibiotika',
+                                title: 'Antibiotikatherapie',
+                                comment: 'Substanz, Dosis, Dauer.',
+                                placeholder: 'z.B. Ampicillin/Sulbactam i.v., geplant 7 Tage, Wechsel auf oral ab Tag 4.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Antibiotische Therapie: ${detail}.` : '- Es erfolgte eine kalkulierte antibiotische Therapie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'supportiv',
+                                title: 'Supportive Maßnahmen',
+                                comment: 'O2-Gabe, Sekretolyse, Antipyrese, Mobilisation.',
+                                placeholder: 'z.B. O2 2L/min, Inhalationen, Paracetamol, Atemtherapie.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Supportive Maßnahmen: ${detail}.` : '- Supportive Therapie mit Sauerstoff, Sekretolyse und Atemphysiotherapie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'monitoring',
+                                title: 'Monitoring & Verlauf',
+                                comment: 'Vitalzeichen, BGA, Re-Evaluation.',
+                                placeholder: 'z.B. tägliche BGA, klinische Besserung ab Tag 2.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Verlauf: ${detail}.` : '- Unter Therapie kam es zu einer kontinuierlichen klinischen Besserung.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Entlassung',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlassung',
+                                title: 'Entlasskriterien',
+                                comment: 'Afebril, stabil, orale Therapie möglich.',
+                                placeholder: 'z.B. Afebril seit 48h, Sat 95% Raumluft, oraler Kostaufbau.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlasskriterien: ${detail}.` : '- Entlassung bei Stabilisierung der Vitalparameter und oraler Antibiotikafähigkeit.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'impfstatus',
+                                title: 'Impfstatus & Prävention',
+                                comment: 'Influenza, Pneumokokken prüfen.',
+                                placeholder: 'z.B. Pneumokokkenimpfung empfohlen, Influenza aufgefrischt.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Impf-/Präventionsberatung: ${detail}.` : '- Impfstatus überprüft und Empfehlungen ausgesprochen.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'nachsorge',
+                                title: 'Nachsorge & Kontrolle',
+                                comment: 'Hausarzt, Kontroll-Röntgen, ggf. Pneumologe.',
+                                placeholder: 'z.B. Hausarztkontrolle in 1 Woche, Röntgenkontrolle in 6 Wochen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorge: ${detail}.` : '- Nachsorge über Hausarzt mit späterer Bildgebung vereinbart.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'ambulant erworbener Pneumonie',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei klinischem Verdacht auf eine ambulant erworbene Pneumonie mit Fieber und Dyspnoe.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'bildgebung', 'score'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['antibiotika', 'supportiv', 'monitoring'] },
+                        { title: 'ENTLASSUNG & PRÄVENTION', keys: ['entlassung', 'impfstatus', 'nachsorge'] }
+                    ],
+                    epikrise: () => 'Unter der kalkulierten Antibiotikatherapie kam es zu einer raschen klinischen Stabilisierung.',
+                    followUp: details => {
+                        let text = 'Weiteres Vorgehen:\n';
+                        const nachsorge = details.nachsorge;
+                        const impf = details.impfstatus;
+                        if (nachsorge && nachsorge.completed) {
+                            text += nachsorge.value ? `- Nachsorgetermine: ${nachsorge.value}.\n` : '- Vereinbarte Nachsorge wahrnehmen.\n';
+                        }
+                        if (impf && impf.completed) {
+                            text += impf.value ? `- Impf-/Prophylaxemaßnahmen: ${impf.value}.\n` : '- Impfstatus aktualisieren gemäß Empfehlung.\n';
+                        }
+                        text += '- Bei Persistenz von Symptomen erneute ärztliche Vorstellung.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'pulmonary_embolism',
+                title: 'Akute Lungenembolie',
+                summary: 'Diagnostik und Therapie der akuten Lungenembolie.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Aufnahme & Risikostratifizierung',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Klinik',
+                                comment: 'Dyspnoe, Thoraxschmerz, Synkope, Risikofaktoren.',
+                                placeholder: 'z.B. plötzliche Dyspnoe, tachykard, Risikofaktor: Immobilisation.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Präsentation: ${detail}.` : '- Klinisch bestand eine akute Dyspnoe mit Tachykardie und Risikofaktoren.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'diagnostik',
+                                title: 'Bildgebung & Diagnostik',
+                                comment: 'CT-PA, Echo, D-Dimere.',
+                                placeholder: 'z.B. CT-PA: zentrale Embolie rechts, Echo: RV-Dilatation.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Bildgebende Diagnostik: ${detail}.` : '- Bildgebung bestätigte eine zentrale Lungenembolie mit Rechtsherzbelastung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'risiko',
+                                title: 'Risikostratifizierung',
+                                comment: 'sPESI, hämodynamischer Status.',
+                                placeholder: 'z.B. sPESI 1 (Alter >80), hämodynamisch stabil.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Risikoeinschätzung: ${detail}.` : '- Die Risikostratifizierung ergab eine intermediär-hohe Risikosituation.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Akuttherapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'antikoagulation',
+                                title: 'Antikoagulation',
+                                comment: 'Heparin/NOAK, Dosis, Monitoring.',
+                                placeholder: 'z.B. Heparinperfusor ziel aPTT, später Apixaban 10mg 2x/d.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Antikoagulation: ${detail}.` : '- Es wurde unmittelbar eine therapeutische Antikoagulation etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'reperfusion',
+                                title: 'Reperfusion/Intervention',
+                                comment: 'Lyse, Katheter, chirurgisch bei Hochrisiko.',
+                                placeholder: 'z.B. Systemische Lyse mit Alteplase 100mg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Reperfusionsmaßnahme: ${detail}.` : '- Aufgrund der Risikokonstellation war keine zusätzliche Reperfusionsmaßnahme notwendig.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'monitoring',
+                                title: 'Monitoring & Supportivtherapie',
+                                comment: 'Sauerstoff, Kreislauf, RV-Entlastung.',
+                                placeholder: 'z.B. O2 4L/min, RR stabil, RV-Funktion in Kontrollen gebessert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Monitoring/Support: ${detail}.` : '- Unter Monitoring stabilisierte sich der Kreislauf rasch.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Langzeitmanagement',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'dauertherapie',
+                                title: 'Dauer der Antikoagulation',
+                                comment: '3-6 Monate oder länger bei Risikofaktoren.',
+                                placeholder: 'z.B. NOAK für 6 Monate, Reevaluation danach.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Dauertherapie: ${detail}.` : '- Eine mindestens dreimonatige Antikoagulation wurde vereinbart.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'thromboseprophylaxe',
+                                title: 'Thromboseprophylaxe & Risikofaktoren',
+                                comment: 'Kompression, Mobilisation, Ursachenklärung.',
+                                placeholder: 'z.B. Kompressionsstrümpfe, Mobilisationsplan, Malignom-Screening eingeleitet.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Präventionsmaßnahmen: ${detail}.` : '- Präventionsmaßnahmen inkl. Mobilisation und Kompression wurden besprochen.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'aufklaerung',
+                                title: 'Patientenaufklärung',
+                                comment: 'Blutungszeichen, Rezidivsymptome, Compliance.',
+                                placeholder: 'z.B. Aufklärung zu Blutungsrisiken, Kontrolltermin in Gerinnungsambulanz.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Aufklärung: ${detail}.` : '- Aufklärung zu Blutungsrisiken und Rezidivsymptomen erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akuter Lungenembolie',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei klinischem Verdacht auf eine akute Lungenembolie mit Dyspnoe.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['diagnostik', 'risiko'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['antikoagulation', 'reperfusion', 'monitoring'] },
+                        { title: 'ENTLASSUNG & PRÄVENTION', keys: ['dauertherapie', 'thromboseprophylaxe', 'aufklaerung'] }
+                    ],
+                    epikrise: () => 'Unter therapeutischer Antikoagulation stabilisierte sich der hämodynamische Status rasch.',
+                    followUp: details => {
+                        let text = 'Empfohlenes Vorgehen:\n';
+                        const dauer = details.dauertherapie;
+                        const prophylaxe = details.thromboseprophylaxe;
+                        if (dauer && dauer.completed) {
+                            text += dauer.value ? `- Antikoagulation gemäß: ${dauer.value}.\n` : '- Fortführung der Antikoagulation für mindestens 3 Monate.\n';
+                        }
+                        if (prophylaxe && prophylaxe.completed) {
+                            text += prophylaxe.value ? `- Präventionsmaßnahmen: ${prophylaxe.value}.\n` : '- Konsequente Umsetzung der besprochenen Präventionsmaßnahmen.\n';
+                        }
+                        text += '- Kontrolle in der Gerinnungsambulanz sowie hausärztliche Betreuung.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'sepsis',
+                title: 'Sepsis/Septischer Schock (internistischer Fokus)',
+                summary: 'Frühe Erkennung und Therapie einer Sepsis mit internistischem Fokus.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Erkennung & Diagnostik',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & klinische Einschätzung',
+                                comment: 'Infektfokus, Symptome, Risikofaktoren.',
+                                placeholder: 'z.B. Fieber, Schüttelfrost, Dysurie, Hypotonie.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Präsentation: ${detail}.` : '- Es zeigte sich ein septisches Krankheitsbild mit Hypotonie und Fieber.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'sofa',
+                                title: 'qSOFA/SOFA-Score',
+                                comment: 'Bewusstsein, Atmung, Blutdruck, Organfunktion.',
+                                placeholder: 'z.B. qSOFA 3 Punkte (AF 28/min, RR 85 mmHg, GCS 13).',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- qSOFA/SOFA: ${detail}.` : '- Der qSOFA war erhöht, sodass von einem hohen Risiko für Sepsis auszugehen war.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'diagnostik',
+                                title: 'Diagnostik & Labor',
+                                comment: 'Blutkulturen, Labor, Bildgebung, Fokusdiagnostik.',
+                                placeholder: 'z.B. Blutkulturen vor Antibiotika, Laktat 3.5 mmol/l, Sono Abdomen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Diagnostik: ${detail}.` : '- Blutkulturen und Laktat wurden abgenommen, Fokusdiagnostik eingeleitet.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Akuttherapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'antibiotika',
+                                title: 'Antibiotikatherapie',
+                                comment: 'Zeitgerechte Gabe, Breitspektrum, Anpassung nach Befund.',
+                                placeholder: 'z.B. Piperacillin/Tazobactam + Vancomycin, Start 45 Min. nach Aufnahme.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Antibiotikatherapie: ${detail}.` : '- Eine frühzeitige kalkulierte Antibiotikatherapie wurde gestartet.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'volumentherapie',
+                                title: 'Volumentherapie & Kreislaufmanagement',
+                                comment: 'Kristalloide, Vasopressoren, Ziele.',
+                                placeholder: 'z.B. 30 ml/kg Ringeracetat, Noradrenalin 0.08 µg/kg/min.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Kreislauftherapie: ${detail}.` : '- Es erfolgte eine leitliniengerechte Volumen- und Vasopressortherapie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'organsupport',
+                                title: 'Organsupport & Verlauf',
+                                comment: 'O2, NIV, Dialyse, engmaschiges Monitoring.',
+                                placeholder: 'z.B. High-Flow-O2, Nierenersatztherapie 2 Sitzungen, engmaschige Laktatkontrollen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Organsupport: ${detail}.` : '- Unterstützende Maßnahmen wie Sauerstoffgabe und engmaschiges Monitoring wurden etabliert.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Stabilisierung & Nachsorge',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlassung',
+                                title: 'Kriterien für Verlegung/Entlassung',
+                                comment: 'Stabile Vitalparameter, Normalisierung Laktat, Fokus saniert.',
+                                placeholder: 'z.B. MAP >70 mmHg ohne Vasopressoren, Laktat normalisiert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlass-/Verlegungskriterien: ${detail}.` : '- Entlassung bei stabilen Vitalparametern und Normalisierung des Laktats.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'nachsorge',
+                                title: 'Nachsorge & Kontrollen',
+                                comment: 'Hausarzt, Infektfokus, Reha.',
+                                placeholder: 'z.B. Hausarztkontrolle in 3 Tagen, Urologe zur Fokusabklärung.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorge: ${detail}.` : '- Nachsorge zur weiteren Fokuskontrolle und Rekonvaleszenz vereinbart.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'praevention',
+                                title: 'Prävention & Aufklärung',
+                                comment: 'Sepsiserkennung, Impfungen, Risikofaktoren.',
+                                placeholder: 'z.B. Aufklärung über Frühzeichen, Influenza-/Pneumokokkenimpfung empfohlen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Präventionsberatung: ${detail}.` : '- Aufklärung über Rezidivrisiko und Impfempfehlungen erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'septischem Krankheitsbild',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei klinischem Verdacht auf eine Sepsis mit hämodynamischer Instabilität.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['sofa', 'diagnostik'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['antibiotika', 'volumentherapie', 'organsupport'] },
+                        { title: 'STABILISIERUNG & WEITERVERSORGUNG', keys: ['entlassung', 'nachsorge', 'praevention'] }
+                    ],
+                    epikrise: () => 'Unter schneller Diagnostik und leitliniengerechter Schocktherapie stabilisierte sich der septische Verlauf.',
+                    followUp: details => {
+                        let text = 'Weiteres Vorgehen:\n';
+                        const nachsorge = details.nachsorge;
+                        const praevention = details.praevention;
+                        if (nachsorge && nachsorge.completed) {
+                            text += nachsorge.value ? `- Nachsorgetermine: ${nachsorge.value}.\n` : '- Vereinbarte Nachsorge wahrnehmen.\n';
+                        }
+                        if (praevention && praevention.completed) {
+                            text += praevention.value ? `- Präventionsmaßnahmen: ${praevention.value}.\n` : '- Frühzeitige Sepsiserkennung und Impfempfehlungen beachten.\n';
+                        }
+                        text += '- Frühzeitige hausärztliche Vorstellung nach Entlassung und ggf. rehabilitative Maßnahmen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'dka',
+                title: 'Diabetische Ketoazidose (DKA)',
+                summary: 'Akuttherapie der diabetischen Ketoazidose.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Initiale Einschätzung',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Symptome',
+                                comment: 'Polyurie, Polydipsie, Erbrechen, Bewusstsein.',
+                                placeholder: 'z.B. Polyurie, Erbrechen, reduzierte Vigilanz seit 1 Tag.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Präsentation: ${detail}.` : '- Typische Symptome einer DKA mit Dehydratation und Vigilanzminderung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor & BGA',
+                                comment: 'BGA, Glukose, Ketone, Elektrolyte.',
+                                placeholder: 'z.B. pH 7.12, BZ 32 mmol/l, Ketonämie, K+ 5.2 mmol/l.',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- Labor/BGA: ${detail}.` : '- Die BGA zeigte eine ausgeprägte metabolische Azidose mit Hyperglykämie.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'diagnostik',
+                                title: 'Differenzialdiagnostik',
+                                comment: 'Auslöser (Infekt, Insulinmangel), Begleiterkrankungen.',
+                                placeholder: 'z.B. Infektfokus: Harnwegsinfektion, Insulinpumpe leer.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Auslöser: ${detail}.` : '- Als Auslöser fand sich ein Infekt bzw. Insulinmangel.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Therapiesteuerung',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'fluids',
+                                title: 'Flüssigkeitstherapie',
+                                comment: 'Initiale Bolusgabe, Erhaltungsrate, Bilanz.',
+                                placeholder: 'z.B. 1L NaCl 0.9% in 1h, danach 250 ml/h.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Flüssigkeitstherapie: ${detail}.` : '- Aggressive Rehydratation mit isotonen Kristalloiden.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'insulin',
+                                title: 'Insulintherapie',
+                                comment: 'Insulininfusion, Zielwerte, Anpassung.',
+                                placeholder: 'z.B. Insulininfusion 0.1 IE/kg/h, Anpassung nach Glukoseabfall.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Insulintherapie: ${detail}.` : '- Intravenöse Insulininfusion mit engmaschiger Steuerung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'elektrolyte',
+                                title: 'Elektrolytmanagement',
+                                comment: 'Kaliumsubstitution, Bicarbonat bei Bedarf.',
+                                placeholder: 'z.B. Kaliumgabe 20 mmol/h bei Spiegel <4 mmol/l, kein Bicarbonat notwendig.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Elektrolyttherapie: ${detail}.` : '- Elektrolytstörungen wurden entsprechend korrigiert.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Transition & Schulung',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlassung',
+                                title: 'Stabilitätskriterien',
+                                comment: 'pH >7.3, BZ <14 mmol/l, orale Zufuhr möglich.',
+                                placeholder: 'z.B. pH 7.36, BZ 11 mmol/l, oraler Kostaufbau toleriert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlasskriterien: ${detail}.` : '- Entlassung bei normnahem Stoffwechsel und oraler Nahrungsaufnahme.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikation',
+                                title: 'Umstellung auf subkutanes Regime',
+                                comment: 'Basal-Bolus-Plan, Anpassung, Monitoring.',
+                                placeholder: 'z.B. Glargin 18 IE abends, Bolusschema nach Kohlenhydraten, CGM aktiviert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Insulinregime: ${detail}.` : '- Ein individuelles subkutanes Insulinschema wurde festgelegt.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'schulung',
+                                title: 'Patientenschulung & Prävention',
+                                comment: 'Sick-Day-Regeln, Ketonkontrollen, Kontaktwege.',
+                                placeholder: 'z.B. Sick-Day-Regeln erläutert, Ketonteststreifen mitgegeben.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Schulung: ${detail}.` : '- Umfassende Schulung zu Sick-Day-Management und Ketonkontrolle erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'diabetischer Ketoazidose',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei Zeichen einer schweren diabetischen Ketoazidose.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'diagnostik'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['fluids', 'insulin', 'elektrolyte'] },
+                        { title: 'ENTLASSUNG & SCHULUNG', keys: ['entlassung', 'medikation', 'schulung'] }
+                    ],
+                    epikrise: () => 'Unter standardisierter Ketoazidose-Therapie normalisierte sich der Stoffwechsel sukzessive.',
+                    followUp: details => {
+                        let text = 'Weiterführendes Vorgehen:\n';
+                        const med = details.medikation;
+                        const schul = details.schulung;
+                        if (med && med.completed) {
+                            text += med.value ? `- Insulinplan: ${med.value}.\n` : '- Subkutanes Insulinschema fortführen wie besprochen.\n';
+                        }
+                        if (schul && schul.completed) {
+                            text += schul.value ? `- Schulungsinhalte: ${schul.value}.\n` : '- Sick-Day-Regeln anwenden und Ketonkontrollen durchführen.\n';
+                        }
+                        text += '- Frühe diabetologische Vorstellung und engmaschige Blutzuckerkontrollen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'hypertensive_emergency',
+                title: 'Hypertensiver Notfall',
+                summary: 'Akutmanagement des hypertensiven Notfalls mit Endorganschäden.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Akuteinschätzung',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Symptome',
+                                comment: 'Neurologisch, kardial, renale Symptome.',
+                                placeholder: 'z.B. Kopfschmerz, Sehstörungen, Brustschmerz, Dyspnoe.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Präsentation: ${detail}.` : '- Es bestanden typische Symptome eines hypertensiven Notfalls.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'diagnostik',
+                                title: 'Diagnostik & Monitoring',
+                                comment: 'RR-Messung, BGA, Labor, EKG.',
+                                placeholder: 'z.B. RR 230/130 mmHg, BGA ohne CO2-Retention, Troponin leicht erhöht.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Diagnostik: ${detail}.` : '- Diagnostik zeigte eine massive Blutdruckkrise mit beginnender Organbeteiligung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'organschaeden',
+                                title: 'Endorganschäden',
+                                comment: 'CT, Fundoskopie, Laborparameter.',
+                                placeholder: 'z.B. CT-Schädel ohne Blutung, Fundus: Papillenödem, Kreatinin 2.1 mg/dl.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Endorganschäden: ${detail}.` : '- Es zeigten sich Zeichen einer Organschädigung (z.B. Fundus, Niere).',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Akuttherapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'iv_therapie',
+                                title: 'Intravenöse Blutdrucksenkung',
+                                comment: 'Urapidil, Nitroglycerin, Zielwerte.',
+                                placeholder: 'z.B. Urapidil Perfusor 5 mg/h, Ziel MAP -25% in 1h.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- i.v. Blutdrucktherapie: ${detail}.` : '- Es erfolgte eine kontrollierte intravenöse Blutdrucksenkung.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'monitoring',
+                                title: 'Monitoring & Verlauf',
+                                comment: 'Intensivmonitoring, neurologische Kontrollen.',
+                                placeholder: 'z.B. Intensivmonitoring 24h, neurologisch regredient, RR nach 12h 170/95 mmHg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Monitoring: ${detail}.` : '- Unter engmaschigem Monitoring normalisierte sich der Blutdruck graduell.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'ursache',
+                                title: 'Ursachenklärung & Zusatztherapie',
+                                comment: 'Compliance, Drogen, Endokrin, Nierenkrise.',
+                                placeholder: 'z.B. Ursache: Therapieabbruch, ergänzt um ACE-Hemmer und Diuretikum.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Ursachenklärung: ${detail}.` : '- Ursachensuche (Compliance, sekundäre Hypertonie) wurde eingeleitet.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Langzeitkontrolle',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'medikation',
+                                title: 'Langzeitmedikation',
+                                comment: 'Mehrfachkombination, Einnahmeplan.',
+                                placeholder: 'z.B. Amlodipin 10mg, Ramipril 5mg, Chlortalidon 12.5mg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Langzeitmedikation: ${detail}.` : '- Eine kombinierte antihypertensive Dauertherapie wurde etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'nachsorge',
+                                title: 'Nachsorge & Monitoring',
+                                comment: 'Hausarzt, 24h-RR, Labor.',
+                                placeholder: 'z.B. Hausarzt in 3 Tagen, 24h-RR in 4 Wochen, Nierenwerte kontrollieren.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorge: ${detail}.` : '- Engmaschige ambulante Blutdruck- und Labor-Kontrollen vereinbart.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'aufklaerung',
+                                title: 'Aufklärung & Lebensstil',
+                                comment: 'Compliance, Salzrestriktion, Gewicht, Bewegung.',
+                                placeholder: 'z.B. Aufklärung zu Salzreduktion, Alkoholreduktion, tägliche RR-Selbstmessung.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Lebensstilberatung: ${detail}.` : '- Umfassende Aufklärung zu Lebensstilmaßnahmen und Adhärenz erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'hypertensivem Notfall',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei massiv erhöhtem Blutdruck mit neurologischen und kardiovaskulären Symptomen.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['diagnostik', 'organschaeden'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['iv_therapie', 'monitoring', 'ursache'] },
+                        { title: 'ENTLASSUNG & NACHBETREUUNG', keys: ['medikation', 'nachsorge', 'aufklaerung'] }
+                    ],
+                    epikrise: () => 'Unter kontrollierter Blutdrucksenkung normalisierten sich die Organsymptome schrittweise.',
+                    followUp: details => {
+                        let text = 'Empfehlungen:\n';
+                        const med = details.medikation;
+                        const nachsorge = details.nachsorge;
+                        if (med && med.completed) {
+                            text += med.value ? `- Antihypertensive Therapie gemäß: ${med.value}.\n` : '- Fortführung der neu etablierten antihypertensiven Kombination.\n';
+                        }
+                        if (nachsorge && nachsorge.completed) {
+                            text += nachsorge.value ? `- Nachsorgeplan: ${nachsorge.value}.\n` : '- Vereinbarte Nachsorge (Hausarzt, 24h-RR) wahrnehmen.\n';
+                        }
+                        text += '- Engmaschige Selbstkontrolle des Blutdrucks und Umsetzung der Lebensstilmaßnahmen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'aki',
+                title: 'Akutes Nierenversagen (AKI)',
+                summary: 'Diagnostik und Management eines akuten Nierenversagens.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Initialdiagnostik',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Status',
+                                comment: 'Diurese, Medikamente, Vorerkrankungen.',
+                                placeholder: 'z.B. Oligurie seit 2 Tagen, NSAR-Einnahme, Herzinsuffizienz.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Anamnese: ${detail}.` : '- Es zeigte sich eine akute Oligurie mit relevanten Risikofaktoren.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor & Urinstatus',
+                                comment: 'Kreatinin, Elektrolyte, Urinsediment.',
+                                placeholder: 'z.B. Kreatinin 3.2 mg/dl (Baseline 1.1), K+ 5.6 mmol/l, Urinsediment: Granulatzylinder.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Labor/Urin: ${detail}.` : '- Laborchemisch deutliche Nierenfunktionsverschlechterung mit pathologischem Sediment.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'bildgebung',
+                                title: 'Bildgebung & Ursachen',
+                                comment: 'Sono, Harnstau, Perfusion.',
+                                placeholder: 'z.B. Nierensonographie ohne Stau, gute Perfusion.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Bildgebung: ${detail}.` : '- Die Sonographie zeigte keinen Harnstau, Hinweise auf prärenale Genese.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Therapie & Verlauf',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'fluid',
+                                title: 'Flüssigkeits- und Kreislauftherapie',
+                                comment: 'Volumenstatus, Diuretika, Vasopressoren.',
+                                placeholder: 'z.B. Volumenchallenge 500 ml, Diuretika pausiert, MAP-Ziel >65 mmHg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Flüssigkeitsmanagement: ${detail}.` : '- Optimierung von Volumenstatus und Perfusion.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'ursache',
+                                title: 'Ursachenbehandlung',
+                                comment: 'Sepsis, Medikamente, Obstruktion.',
+                                placeholder: 'z.B. Absetzen nephrotoxischer NSAR, Behandlung HWI.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Ursachenbehandlung: ${detail}.` : '- Nephrotoxische Substanzen wurden pausiert und der Fokus behandelt.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'dialyse',
+                                title: 'Nierenersatzverfahren',
+                                comment: 'Indikation, Form, Dauer.',
+                                placeholder: 'z.B. Zwei Sitzungen intermittierende Hämodialyse bei Hyperkaliämie.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nierenersatzverfahren: ${detail}.` : '- Es war kein Nierenersatzverfahren erforderlich.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Nachsorge & Verlaufskontrolle',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlassung',
+                                title: 'Entlasskriterien',
+                                comment: 'Stabiler Kreatinintrend, ausreichende Diurese.',
+                                placeholder: 'z.B. Kreatinin rückläufig auf 1.8 mg/dl, Diurese 1.5 l/24h.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlasskriterien: ${detail}.` : '- Entlassung bei stabilisiertem Kreatinin und ausreichender Diurese.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikation',
+                                title: 'Medikationsanpassung',
+                                comment: 'ACE-Hemmer, Diuretika, Dosisanpassung.',
+                                placeholder: 'z.B. ACE-Hemmer reduziert, Diuretika niedrig dosiert wieder begonnen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Medikamentenplan: ${detail}.` : '- Medikamente wurden nierengerecht angepasst.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'kontrolle',
+                                title: 'Nachsorge & Kontrollen',
+                                comment: 'Laborkontrollen, Nephrologe.',
+                                placeholder: 'z.B. Laborkontrolle in 3 Tagen, nephrologische Vorstellung in 2 Wochen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Kontrollplan: ${detail}.` : '- Engmaschige Laborkontrollen und nephrologische Mitbetreuung vereinbart.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akutem Nierenversagen',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei akuter Oligurie und Laborhinweisen auf ein Nierenversagen.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'bildgebung'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['fluid', 'ursache', 'dialyse'] },
+                        { title: 'ENTLASSUNG & NACHSORGE', keys: ['entlassung', 'medikation', 'kontrolle'] }
+                    ],
+                    epikrise: () => 'Unter Optimierung von Volumenstatus und Ursachenbehandlung kam es zu einer graduellen Erholung der Nierenfunktion.',
+                    followUp: details => {
+                        let text = 'Empfehlungen:\n';
+                        const kontrolle = details.kontrolle;
+                        const med = details.medikation;
+                        if (med && med.completed) {
+                            text += med.value ? `- Medikamentenanpassung: ${med.value}.\n` : '- Medikamente nierengerecht weiterführen.\n';
+                        }
+                        if (kontrolle && kontrolle.completed) {
+                            text += kontrolle.value ? `- Kontrolltermine: ${kontrolle.value}.\n` : '- Vereinbarte Laborkontrollen wahrnehmen.\n';
+                        }
+                        text += '- Ausreichende Hydrierung und Vermeidung nephrotoxischer Substanzen.';
+                        return text;
+                    }
+                }
+            },
+            {
+                id: 'gi_bleeding',
+                title: 'Obere gastrointestinale Blutung',
+                summary: 'Akutversorgung einer oberen gastrointestinalen Blutung.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'Stabilisierung & Diagnostik',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Risikofaktoren',
+                                comment: 'Vorerkrankungen, NSAID, Leberzirrhose.',
+                                placeholder: 'z.B. Hämatemesis seit 2h, Zirrhose Child B, ASS 100mg.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Klinische Präsentation: ${detail}.` : '- Es bestand eine akute Hämatemesis bei Risikokonstellation.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor & Scores',
+                                comment: 'Hb, INR, Laktat, Glasgow-Blatchford.',
+                                placeholder: 'z.B. Hb 7.8 g/dl, INR 1.6, GBS 12.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Labor/Score: ${detail}.` : '- Labor zeigte eine relevante Anämie mit erhöhtem Blutungsrisiko.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'stabilisierung',
+                                title: 'Akutstabilisierung',
+                                comment: 'IV-Zugänge, Volumen, PPI, ggf. Octreotid.',
+                                placeholder: 'z.B. 2 großlumige Zugänge, 1L Kristalloid, Pantoprazol-Bolus, Octreotid-Perfusor.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Akutstabilisierung: ${detail}.` : '- Es erfolgten Volumentherapie, PPI-Bolus und vasoaktive Therapie.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Endoskopie & Therapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'endoskopie',
+                                title: 'Endoskopischer Befund',
+                                comment: 'Lokalisation, Forrest, Varizen.',
+                                placeholder: 'z.B. Ulcus duodeni Forrest IIa, Adrenalin + Clip-Therapie.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Endoskopie: ${detail}.` : '- Endoskopisch zeigte sich ein blutendes Ulcus, das versorgt wurde.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'therapie',
+                                title: 'Medikamentöse Zusatztherapie',
+                                comment: 'PPI, Antibiotika, Varizenprophylaxe.',
+                                placeholder: 'z.B. Pantoprazol Perfusor 80mg/8h, Ceftriaxon 2g, Propranolol geplant.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Zusatztherapie: ${detail}.` : '- Eine intensive PPI-Therapie sowie Prophylaxe erfolgten.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'transfusion',
+                                title: 'Transfusionsmanagement',
+                                comment: 'EK, FFP, Thrombozyten, Zielwerte.',
+                                placeholder: 'z.B. 2 EK transfundiert, Ziel Hb >8 g/dl, FFP bei INR >1.5.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Transfusionsstrategie: ${detail}.` : '- Blutprodukte wurden entsprechend Bedarf zugeführt.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Nachsorge & Rezidivprophylaxe',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'entlassung',
+                                title: 'Entlasskriterien',
+                                comment: 'Stabile Hämodynamik, Hb stabil, orale Gabe möglich.',
+                                placeholder: 'z.B. Hb 9.5 g/dl stabil, keine erneute Hämatemesis, PPI oral möglich.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Entlasskriterien: ${detail}.` : '- Entlassung bei stabiler Hämodynamik und gesichertem Hb.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'medikation',
+                                title: 'Weiterführende Medikation',
+                                comment: 'PPI oral, Betablocker, Absetzen NSAR.',
+                                placeholder: 'z.B. Pantoprazol 40mg 2x/d, Propranolol 20mg 2x/d, NSAR abgesetzt.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Weiterbehandlung: ${detail}.` : '- PPI-Therapie und ggf. Betablocker wurden etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'beratung',
+                                title: 'Beratung & Follow-up',
+                                comment: 'Endoskopiekontrolle, Alkoholabstinenz, Leberzentrum.',
+                                placeholder: 'z.B. Kontrollgastroskopie in 6 Wochen, Alkoholabstinenz besprochen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Beratung: ${detail}.` : '- Umfassende Rezidivprophylaxe und Nachsorgetermine wurden besprochen.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'oberer gastrointestinaler Blutung',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte bei ${anam.value}.` : 'Die Aufnahme erfolgte bei akuter Hämatemesis mit hämodynamischer Gefährdung.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'stabilisierung'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['endoskopie', 'therapie', 'transfusion'] },
+                        { title: 'ENTLASSUNG & PROPHYLAXE', keys: ['entlassung', 'medikation', 'beratung'] }
+                    ],
+                    epikrise: () => 'Unter endoskopischer Blutstillung und supportiver Therapie stabilisierte sich die Situation.',
+                    followUp: details => {
+                        let text = 'Weiteres Vorgehen:\n';
+                        const med = details.medikation;
+                        const beratung = details.beratung;
+                        if (med && med.completed) {
+                            text += med.value ? `- Weiterführende Medikation: ${med.value}.\n` : '- PPI-/Betablockertherapie wie besprochen fortsetzen.\n';
+                        }
+                        if (beratung && beratung.completed) {
+                            text += beratung.value ? `- Nachsorge: ${beratung.value}.\n` : '- Vereinbarte Kontrollen und Abstinenzmaßnahmen einhalten.\n';
+                        }
+                        text += '- Frühe hausärztliche Kontrolle sowie ggf. erneute endoskopische Vorstellung.';
+                        return text;
+                    }
+                }
+            }
+        ];
+        let currentCase = null;
+        let currentItemMap = {};
+
+        const caseSelect = document.getElementById('caseSelect');
+        const caseContent = document.getElementById('caseContent');
+        const selectedCaseTitle = document.getElementById('selectedCaseTitle');
+        const selectedCaseSummary = document.getElementById('selectedCaseSummary');
+        const arztbriefModal = document.getElementById('arztbriefModal');
+        const arztbriefText = document.getElementById('arztbriefText');
+        const copyBtn = document.getElementById('copyBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeModalBtn2 = document.getElementById('closeModalBtn2');
+
+        caseDefinitions.forEach((definition, index) => {
+            const option = document.createElement('option');
+            option.value = definition.id;
+            option.textContent = `${index + 1}. ${definition.title}`;
+            caseSelect.appendChild(option);
+        });
+
+        caseSelect.addEventListener('change', event => {
+            renderCase(event.target.value);
+        });
+
+        function renderCase(caseId) {
+            const definition = caseDefinitions.find(entry => entry.id === caseId);
+            if (!definition) return;
+            currentCase = definition;
+            currentItemMap = {};
+
+            selectedCaseTitle.textContent = definition.title;
+            selectedCaseSummary.textContent = definition.summary;
+            caseContent.innerHTML = '';
+
+            definition.sections.forEach(section => {
+                const sectionElement = document.createElement('section');
+                sectionElement.className = 'sop-section bg-white rounded-xl shadow-lg border border-gray-200';
+
+                const header = document.createElement('div');
+                header.className = `section-header ${section.colorClass} text-white p-6 rounded-t-xl flex justify-between items-center`;
+                header.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        ${headerIcons[section.icon] || ''}
+                        <h2 class="text-2xl font-bold">${section.title}</h2>
+                    </div>
+                    <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
+
+                const body = document.createElement('div');
+                body.className = 'p-6 space-y-4';
+
+                section.items.forEach(item => {
+                    currentItemMap[item.key] = item;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = `${item.borderClass} sop-item p-4 rounded-md ${item.backgroundClass} hover:shadow-md`;
+                    itemDiv.dataset.key = item.key;
+
+                    const topRow = document.createElement('div');
+                    topRow.className = 'flex justify-between items-center';
+                    topRow.innerHTML = `
+                        <span class="font-semibold text-gray-700 main-text">${item.title}</span>
+                        <svg class="icon w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+                    const comment = document.createElement('p');
+                    comment.className = 'comment' + (item.commentWarning ? ' comment-warning' : '');
+                    comment.textContent = item.comment;
+
+                    const detailsWrapper = document.createElement('div');
+                    detailsWrapper.className = 'details-input';
+                    const inputId = `${definition.id}_${item.key}_details`;
+
+                    let inputElement;
+                    if (item.inputType === 'textarea') {
+                        inputElement = document.createElement('textarea');
+                        inputElement.rows = 3;
+                    } else {
+                        inputElement = document.createElement('input');
+                        inputElement.type = 'text';
+                    }
+                    inputElement.id = inputId;
+                    inputElement.placeholder = item.placeholder;
+                    inputElement.className = 'w-full p-2 mt-2 border border-gray-300 rounded-md text-sm';
+
+                    detailsWrapper.appendChild(inputElement);
+
+                    itemDiv.appendChild(topRow);
+                    itemDiv.appendChild(comment);
+                    itemDiv.appendChild(detailsWrapper);
+                    body.appendChild(itemDiv);
+                });
+
+                sectionElement.appendChild(header);
+                sectionElement.appendChild(body);
+                caseContent.appendChild(sectionElement);
+            });
+
+            initializeInteractions();
+        }
+
+        function initializeInteractions() {
+            const sopItems = caseContent.querySelectorAll('.sop-item');
+            sopItems.forEach(item => {
+                item.addEventListener('click', event => {
+                    if (event.target.closest('input, textarea')) return;
+                    item.classList.toggle('completed');
+                    const icon = item.querySelector('.icon');
+                    if (item.classList.contains('completed')) {
+                        icon.classList.remove('text-gray-400');
+                        icon.classList.add('text-green-500');
+                    } else {
+                        icon.classList.remove('text-green-500');
+                        icon.classList.add('text-gray-400');
+                    }
+                });
+            });
+
+            const sectionHeaders = caseContent.querySelectorAll('.section-header');
+            sectionHeaders.forEach(header => {
+                header.addEventListener('click', event => {
+                    if (event.target.closest('button, select, input, textarea')) return;
+                    header.parentElement.classList.toggle('collapsed');
+                });
+            });
+        }
+
+        function collectDetails() {
+            const details = {};
+            if (!currentCase) return details;
+            currentCase.sections.forEach(section => {
+                section.items.forEach(item => {
+                    const element = caseContent.querySelector(`.sop-item[data-key="${item.key}"]`);
+                    if (!element) return;
+                    const input = element.querySelector('input, textarea');
+                    details[item.key] = {
+                        completed: element.classList.contains('completed'),
+                        value: input ? input.value.trim() : ''
+                    };
+                });
+            });
+            return details;
+        }
+
+        function generateArztbrief() {
+            if (!currentCase) return;
+            const details = collectDetails();
+            const hasCompleted = Object.values(details).some(entry => entry && entry.completed);
+
+            if (!hasCompleted) {
+                arztbriefText.value = 'Keine Maßnahmen oder Details ausgewählt. Bitte wählen Sie abgeschlossene Schritte aus und füllen Sie die entsprechenden Felder aus.';
+                arztbriefModal.style.display = 'flex';
+                return;
+            }
+
+            let brief = 'ARZTBRIEF\n\n';
+            brief += `Datum: ${new Date().toLocaleDateString('de-DE')}\n\n`;
+            brief += `Betreff: Stationärer Aufenthalt bei ${currentCase.brief.subject}\n\n`;
+            brief += `${currentCase.brief.intro(details)}\n\n`;
+
+            currentCase.brief.sections.forEach(section => {
+                const lines = [];
+                section.keys.forEach(key => {
+                    const itemDef = currentItemMap[key];
+                    const itemData = details[key];
+                    if (!itemDef || !itemData || !itemData.completed) return;
+                    const text = itemDef.briefLine ? itemDef.briefLine(itemData.value, details) : '';
+                    if (text) lines.push(text);
+                });
+                if (lines.length) {
+                    brief += `${section.title}:\n`;
+                    lines.forEach(line => {
+                        brief += `${line}\n`;
+                    });
+                    brief += '\n';
+                }
+            });
+
+            brief += `${currentCase.brief.epikrise(details)}\n\n`;
+            brief += `${currentCase.brief.followUp(details)}\n\n`;
+            brief += 'Mit freundlichen Grüßen\n\n[Ihr Name/Ihre Abteilung]';
+
+            arztbriefText.value = brief;
+            arztbriefModal.style.display = 'flex';
+        }
+
+        document.getElementById('generateBriefBtn').addEventListener('click', generateArztbrief);
+
+        [closeModalBtn, closeModalBtn2].forEach(btn => {
+            btn.addEventListener('click', () => {
+                arztbriefModal.style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', event => {
+            if (event.target === arztbriefModal) {
+                arztbriefModal.style.display = 'none';
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            arztbriefText.select();
+            document.execCommand('copy');
+            copyBtn.textContent = 'Kopiert!';
+            setTimeout(() => {
+                copyBtn.textContent = 'Text kopieren';
+            }, 2000);
+        });
+
+        renderCase(caseDefinitions[0].id);
+        caseSelect.value = caseDefinitions[0].id;
+    </script>
+
+</body>
+</html>
