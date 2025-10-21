@@ -1661,6 +1661,187 @@
                         return text;
                     }
                 }
+            },
+            {
+                id: 'pancreatitis',
+                title: 'Akute Pankreatitis',
+                summary: 'Diagnose und Management der akuten Pankreatitis nach aktuellen Leitlinien.',
+                sections: [
+                    {
+                        id: 'aufnahme',
+                        title: 'ZNA – Erstkontakt',
+                        colorClass: 'bg-blue-500',
+                        icon: 'clock',
+                        items: [
+                            {
+                                key: 'anamnese',
+                                title: 'Anamnese & Untersuchung',
+                                comment: 'Oberbauchschmerzen (Gürtelschmerz), Übelkeit, Erbrechen. Risikofaktoren: Alkohol, Gallensteine.',
+                                placeholder: 'z.B. Akut aufgetretene epigastrische Schmerzen seit 6h, gürtelförmig ausstrahlend, Alkoholanamnese positiv.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Die Anamnese ergab ${detail}.` : '- Die Anamnese ergab typische gürtelförmige Oberbauchschmerzen mit Übelkeit.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'labor',
+                                title: 'Labor',
+                                comment: 'Lipase/Amylase (>3-fach erhöht), CRP, Leberwerte, Bilirubin, LDH, Leukozyten, Kalzium.',
+                                placeholder: 'z.B. Lipase 1850 U/l (Norm <60), CRP 45 mg/l, Leukozyten 14.000/µl, Bilirubin 2.1 mg/dl.',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- Labor: ${detail}.` : '- Labor zeigte deutlich erhöhte Pankreaswerte (Lipase >3-fach).',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'bildgebung',
+                                title: 'Bildgebung',
+                                comment: 'Abdomen-Sonografie (Gallensteine, Pankreasschwellung), CT bei unklarem Verlauf oder Komplikationsverdacht.',
+                                placeholder: 'z.B. Sono: Cholezystolithiasis, ödematös geschwollenes Pankreas. CT: unkomplizierte ödematöse Pankreatitis ohne Nekrose.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Bildgebung: ${detail}.` : '- Bildgebung bestätigte die Diagnose einer akuten Pankreatitis.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'schweregrad',
+                                title: 'Schweregrad-Beurteilung',
+                                comment: 'SIRS-Kriterien, BISAP-Score, Ranson-Kriterien. Leicht vs. moderat-schwer.',
+                                placeholder: 'z.B. BISAP-Score 1 (BUN erhöht), kein SIRS, somit leichte Pankreatitis.',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- Schweregrad: ${detail}.` : '- Die Schweregrad-Beurteilung ergab eine leichte bis moderate Pankreatitis.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'therapie_initial',
+                                title: 'Initiale Therapie',
+                                comment: 'Aggressive i.v. Flüssigkeitstherapie (250-500ml/h balancierte Lösung), Analgesie (Metamizol, Opiate), Nahrungskarenz initial.',
+                                placeholder: 'z.B. Ringer-Laktat 500ml/h i.v., Metamizol 1g i.v., Pantoprazol 40mg i.v., Nahrungskarenz.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Initial erfolgte ${detail}.` : '- Es wurde eine aggressive Flüssigkeitssubstitution und suffiziente Analgesie eingeleitet.',
+                                inputType: 'text'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'station',
+                        title: 'Station – Therapie',
+                        colorClass: 'bg-green-500',
+                        icon: 'ward',
+                        items: [
+                            {
+                                key: 'fluessigkeit',
+                                title: 'Flüssigkeitstherapie & Monitoring',
+                                comment: 'Ziel: 5-10 ml/kg/h in ersten 24h. Monitoring: Diurese, Elektrolyte, Hämatokrit, Vitalparameter.',
+                                placeholder: 'z.B. Ringer-Laktat 500ml/h über 24h, dann Reduktion. Diurese >0.5ml/kg/h, Hkt stabil.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Flüssigkeitsmanagement: ${detail}.` : '- Leitliniengerechte aggressive Flüssigkeitstherapie mit regelmäßigem Monitoring.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'ernaehrung',
+                                title: 'Ernährungsmanagement',
+                                comment: 'Früher enteraler Kostaufbau (innerhalb 24-72h) bei leichter Pankreatitis. Nasogastrale Sonde bei schwerer Pankreatitis.',
+                                placeholder: 'z.B. Kostaufbau nach 24h mit leichter Kost begonnen, gut toleriert.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Ernährung: ${detail}.` : '- Früher enteraler Kostaufbau wurde erfolgreich etabliert.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'komplikationen',
+                                title: 'Komplikations-Monitoring',
+                                comment: 'ARDS, AKI, Sepsis, Pankreasnekrose, Pseudozysten, Blutung. Engmaschige Kontrolle bei schwerer Verlaufsform.',
+                                placeholder: 'z.B. Kein Hinweis auf Nekrose, keine Organinsuffizienz, Verlauf unkompliziert.',
+                                borderClass: 'border-l-4 border-red-400',
+                                backgroundClass: 'bg-red-50',
+                                commentWarning: true,
+                                briefLine: detail => detail ? `- Komplikationen: ${detail}.` : '- Komplikations-Screening zeigte einen unkomplizierten Verlauf.',
+                                inputType: 'textarea'
+                            },
+                            {
+                                key: 'aetiologie',
+                                title: 'Ätiologie-spezifische Therapie',
+                                comment: 'ERCP bei biliärer Pankreatitis mit Cholangitis/Cholestase. Alkoholabstinenz besprechen. Cholezystektomie planen.',
+                                placeholder: 'z.B. Biliäre Genese, ERCP mit Papillotomie durchgeführt, Steine extrahiert. Cholezystektomie in 2-4 Wochen geplant.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Ätiologie-Therapie: ${detail}.` : '- Ätiologie wurde identifiziert und entsprechende Therapie eingeleitet.',
+                                inputType: 'textarea'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'entlassung',
+                        title: 'Entlassung',
+                        colorClass: 'bg-purple-500',
+                        icon: 'checklist',
+                        items: [
+                            {
+                                key: 'rezidivprophylaxe',
+                                title: 'Rezidivprophylaxe',
+                                comment: 'Bei biliärer Genese: elektive Cholezystektomie. Bei Alkohol: Abstinenz, Suchtberatung. Medikamente überprüfen.',
+                                placeholder: 'z.B. Cholezystektomie ambulant in 3 Wochen vereinbart. Alkoholabstinenz dringend empfohlen, Suchtberatung vermittelt.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Rezidivprophylaxe: ${detail}.` : '- Maßnahmen zur Rezidivprophylaxe wurden eingeleitet.',
+                                inputType: 'textarea'
+                            },
+                            {
+                                key: 'nachsorge',
+                                title: 'Follow-up & Kontrollen',
+                                comment: 'Hausarzt-Kontrolle in 1-2 Wochen, Kontrolllabor (Lipase, Leberwerte), ggf. Kontroll-Bildgebung.',
+                                placeholder: 'z.B. Hausärztliche Kontrolle in 10 Tagen mit Lipase-Kontrolle. Bei biliärer Genese präop. Vorstellung Chirurgie.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Nachsorge: ${detail}.` : '- Strukturierte Nachsorge wurde vereinbart.',
+                                inputType: 'text'
+                            },
+                            {
+                                key: 'aufklaerung',
+                                title: 'Patientenaufklärung',
+                                comment: 'Warnsignale (erneute Schmerzen, Fieber), Diät (fettarm initial), Alkoholverzicht, Medikamentenadhärenz.',
+                                placeholder: 'z.B. Aufklärung über fettarme Kost, Alkoholabstinenz, Warnsignale (Schmerzen, Fieber). Pat. verstand alle Empfehlungen.',
+                                borderClass: 'border-l-4 border-gray-300',
+                                backgroundClass: 'bg-gray-50',
+                                briefLine: detail => detail ? `- Patientenaufklärung: ${detail}.` : '- Umfassende Patientenaufklärung zu Diät, Alkoholabstinenz und Warnsignalen erfolgte.',
+                                inputType: 'text'
+                            }
+                        ]
+                    }
+                ],
+                brief: {
+                    subject: 'akuter Pankreatitis',
+                    intro: details => {
+                        const anam = details.anamnese;
+                        const text = anam && anam.completed && anam.value ? `Die Aufnahme erfolgte notfallmäßig bei ${anam.value}.` : 'Die Aufnahme erfolgte notfallmäßig bei typischen gürtelförmigen Oberbauchschmerzen mit Verdacht auf akute Pankreatitis.';
+                        return `${greetingText}\n\n${text}`;
+                    },
+                    sections: [
+                        { title: 'DIAGNOSTIK', keys: ['labor', 'bildgebung', 'schweregrad'] },
+                        { title: 'THERAPIE UND VERLAUF', keys: ['therapie_initial', 'fluessigkeit', 'ernaehrung', 'komplikationen', 'aetiologie'] },
+                        { title: 'ENTLASSUNG & PROPHYLAXE', keys: ['rezidivprophylaxe', 'nachsorge', 'aufklaerung'] }
+                    ],
+                    epikrise: () => 'Unter leitliniengerechter Flüssigkeitstherapie, Analgesie und frühem enteralem Kostaufbau kam es zu einer komplikationslosen Rekonvaleszenz. Die Diagnose einer akuten Pankreatitis wurde laborchemisch und bildgebend gesichert.',
+                    followUp: details => {
+                        let text = 'Weiteres Vorgehen:\n';
+                        const rezidiv = details.rezidivprophylaxe;
+                        const nachsorge = details.nachsorge;
+                        if (rezidiv && rezidiv.completed) {
+                            text += rezidiv.value ? `- Rezidivprophylaxe: ${rezidiv.value}.\n` : '- Rezidivprophylaxe wie besprochen umsetzen (Cholezystektomie bzw. Alkoholabstinenz).\n';
+                        }
+                        if (nachsorge && nachsorge.completed) {
+                            text += nachsorge.value ? `- ${nachsorge.value}.\n` : '- Hausärztliche Kontrolle und Laborkontrolle vereinbart.\n';
+                        }
+                        text += '- Bei erneuten Schmerzen, Fieber oder Verschlechterung des Allgemeinzustands umgehende Wiedervorstellung.';
+                        return text;
+                    }
+                }
             }
         ];
         let currentCase = null;
