@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insulin Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .result-card {
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .unit-toggle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .unit-toggle:hover {
+            transform: scale(1.05);
+        }
+        .disclaimer {
+            border-left: 4px solid #ef4444;
+            background-color: #fef2f2;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Header -->
+        <header class="text-center text-white">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-2">💉 Insulin Calculator</h1>
+            <p class="text-lg opacity-90">Calculate correction and meal insulin doses</p>
+        </header>
+
+        <!-- Medical Disclaimer -->
+        <div class="disclaimer glass-card rounded-xl shadow-lg p-6">
+            <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                    <h3 class="font-bold text-red-900 text-lg mb-2">Medical Disclaimer</h3>
+                    <p class="text-red-800 text-sm leading-relaxed">
+                        This calculator is for <strong>educational purposes only</strong> and should not replace professional medical advice.
+                        Always consult with your healthcare provider before making any changes to your insulin regimen.
+                        Incorrect insulin dosing can be dangerous and lead to hypoglycemia or hyperglycemia.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unit Selector -->
+        <div class="glass-card rounded-xl shadow-lg p-4">
+            <div class="flex items-center justify-between">
+                <span class="text-gray-700 font-medium">Blood Glucose Unit:</span>
+                <div class="flex gap-2">
+                    <button id="unitMgDl" class="unit-toggle px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium">
+                        mg/dL
+                    </button>
+                    <button id="unitMmol" class="unit-toggle px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium">
+                        mmol/L
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="glass-card rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Input Parameters</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Current Blood Glucose -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Current Blood Glucose
+                        <span id="bgUnit" class="text-indigo-600">(mg/dL)</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="currentBG"
+                        class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                        placeholder="e.g., 180"
+                        min="0"
+                        step="1">
+                </div>
+
+                <!-- Target Blood Glucose -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Target Blood Glucose
+                        <span id="targetUnit" class="text-indigo-600">(mg/dL)</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="targetBG"
+                        class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                        placeholder="e.g., 100"
+                        min="0"
+                        step="1">
+                </div>
+
+                <!-- Insulin Sensitivity Factor -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Insulin Sensitivity Factor (ISF)
+                        <span class="text-xs text-gray-500 block mt-1">How much 1 unit of insulin lowers BG</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="isf"
+                        class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                        placeholder="e.g., 50"
+                        min="0"
+                        step="1">
+                </div>
+
+                <!-- Carbohydrate Ratio -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Insulin-to-Carb Ratio (ICR)
+                        <span class="text-xs text-gray-500 block mt-1">Grams of carbs covered by 1 unit</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="icr"
+                        class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                        placeholder="e.g., 10"
+                        min="0"
+                        step="0.1">
+                </div>
+
+                <!-- Carbohydrates in Meal -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Carbohydrates in Meal (grams)
+                        <span class="text-xs text-gray-500 block mt-1">Total carbs you plan to eat</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="carbs"
+                        class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                        placeholder="e.g., 45"
+                        min="0"
+                        step="1">
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <button
+                id="calculateBtn"
+                class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                Calculate Insulin Dose
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="glass-card rounded-xl shadow-lg p-6 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Results</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Correction Dose -->
+                <div class="result-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-5 border-2 border-blue-300">
+                    <div class="text-sm font-semibold text-blue-800 mb-1">Correction Dose</div>
+                    <div class="text-3xl font-bold text-blue-900" id="correctionDose">0</div>
+                    <div class="text-xs text-blue-700 mt-1">units</div>
+                </div>
+
+                <!-- Meal Dose -->
+                <div class="result-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-5 border-2 border-green-300">
+                    <div class="text-sm font-semibold text-green-800 mb-1">Meal Dose</div>
+                    <div class="text-3xl font-bold text-green-900" id="mealDose">0</div>
+                    <div class="text-xs text-green-700 mt-1">units</div>
+                </div>
+
+                <!-- Total Dose -->
+                <div class="result-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-5 border-2 border-purple-300">
+                    <div class="text-sm font-semibold text-purple-800 mb-1">Total Dose</div>
+                    <div class="text-3xl font-bold text-purple-900" id="totalDose">0</div>
+                    <div class="text-xs text-purple-700 mt-1">units</div>
+                </div>
+            </div>
+
+            <!-- Calculation Details -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h3 class="font-semibold text-gray-800 mb-3">Calculation Details:</h3>
+                <div class="space-y-2 text-sm text-gray-700">
+                    <div id="correctionCalc" class="font-mono"></div>
+                    <div id="mealCalc" class="font-mono"></div>
+                    <div id="totalCalc" class="font-mono font-semibold"></div>
+                </div>
+            </div>
+
+            <!-- Warnings -->
+            <div id="warningSection" class="mt-4 hidden">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-yellow-800">Important Reminders:</p>
+                            <ul id="warningList" class="mt-2 text-sm text-yellow-700 list-disc list-inside"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="glass-card rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Understanding the Calculations</h3>
+
+            <div class="space-y-4 text-gray-700">
+                <div>
+                    <h4 class="font-semibold text-indigo-700 mb-2">📊 Correction Dose (Sliding Scale)</h4>
+                    <p class="text-sm">
+                        <span class="font-mono bg-gray-100 px-2 py-1 rounded">
+                            Correction Dose = (Current BG - Target BG) ÷ ISF
+                        </span>
+                    </p>
+                    <p class="text-sm mt-2">
+                        This calculates how much insulin is needed to bring your blood glucose from its current level down to your target level.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-indigo-700 mb-2">🍽️ Meal Dose (Carbohydrate Coverage)</h4>
+                    <p class="text-sm">
+                        <span class="font-mono bg-gray-100 px-2 py-1 rounded">
+                            Meal Dose = Carbohydrates ÷ ICR
+                        </span>
+                    </p>
+                    <p class="text-sm mt-2">
+                        This calculates how much insulin is needed to cover the carbohydrates in your meal.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-indigo-700 mb-2">💉 Total Dose</h4>
+                    <p class="text-sm">
+                        <span class="font-mono bg-gray-100 px-2 py-1 rounded">
+                            Total Dose = Correction Dose + Meal Dose
+                        </span>
+                    </p>
+                    <p class="text-sm mt-2">
+                        This is the total amount of insulin you would need to take.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-white text-sm opacity-75 pb-4">
+            <p>Always verify calculations with your healthcare provider</p>
+        </footer>
+    </div>
+
+    <script>
+        let currentUnit = 'mgdl'; // Default unit
+
+        // Unit conversion factors
+        const MGDL_TO_MMOL = 0.0555;
+        const MMOL_TO_MGDL = 18.0;
+
+        // DOM Elements
+        const unitMgDlBtn = document.getElementById('unitMgDl');
+        const unitMmolBtn = document.getElementById('unitMmol');
+        const currentBGInput = document.getElementById('currentBG');
+        const targetBGInput = document.getElementById('targetBG');
+        const isfInput = document.getElementById('isf');
+        const icrInput = document.getElementById('icr');
+        const carbsInput = document.getElementById('carbs');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const bgUnitSpan = document.getElementById('bgUnit');
+        const targetUnitSpan = document.getElementById('targetUnit');
+
+        // Unit Toggle
+        unitMgDlBtn.addEventListener('click', () => switchUnit('mgdl'));
+        unitMmolBtn.addEventListener('click', () => switchUnit('mmol'));
+
+        function switchUnit(unit) {
+            if (unit === currentUnit) return;
+
+            currentUnit = unit;
+
+            if (unit === 'mgdl') {
+                unitMgDlBtn.classList.add('bg-indigo-600', 'text-white');
+                unitMgDlBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                unitMmolBtn.classList.remove('bg-indigo-600', 'text-white');
+                unitMmolBtn.classList.add('bg-gray-200', 'text-gray-700');
+                bgUnitSpan.textContent = '(mg/dL)';
+                targetUnitSpan.textContent = '(mg/dL)';
+
+                // Convert values if they exist
+                if (currentBGInput.value) {
+                    currentBGInput.value = Math.round(parseFloat(currentBGInput.value) * MMOL_TO_MGDL);
+                }
+                if (targetBGInput.value) {
+                    targetBGInput.value = Math.round(parseFloat(targetBGInput.value) * MMOL_TO_MGDL);
+                }
+                if (isfInput.value) {
+                    isfInput.value = Math.round(parseFloat(isfInput.value) * MMOL_TO_MGDL);
+                }
+
+                currentBGInput.step = '1';
+                targetBGInput.step = '1';
+                isfInput.step = '1';
+            } else {
+                unitMmolBtn.classList.add('bg-indigo-600', 'text-white');
+                unitMmolBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                unitMgDlBtn.classList.remove('bg-indigo-600', 'text-white');
+                unitMgDlBtn.classList.add('bg-gray-200', 'text-gray-700');
+                bgUnitSpan.textContent = '(mmol/L)';
+                targetUnitSpan.textContent = '(mmol/L)';
+
+                // Convert values if they exist
+                if (currentBGInput.value) {
+                    currentBGInput.value = (parseFloat(currentBGInput.value) * MGDL_TO_MMOL).toFixed(1);
+                }
+                if (targetBGInput.value) {
+                    targetBGInput.value = (parseFloat(targetBGInput.value) * MGDL_TO_MMOL).toFixed(1);
+                }
+                if (isfInput.value) {
+                    isfInput.value = (parseFloat(isfInput.value) * MGDL_TO_MMOL).toFixed(1);
+                }
+
+                currentBGInput.step = '0.1';
+                targetBGInput.step = '0.1';
+                isfInput.step = '0.1';
+            }
+        }
+
+        // Calculate Button
+        calculateBtn.addEventListener('click', calculateInsulin);
+
+        // Allow Enter key to trigger calculation
+        [currentBGInput, targetBGInput, isfInput, icrInput, carbsInput].forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') calculateInsulin();
+            });
+        });
+
+        function calculateInsulin() {
+            // Get values
+            const currentBG = parseFloat(currentBGInput.value);
+            const targetBG = parseFloat(targetBGInput.value);
+            const isf = parseFloat(isfInput.value);
+            const icr = parseFloat(icrInput.value);
+            const carbs = parseFloat(carbsInput.value) || 0;
+
+            // Validation
+            if (!currentBG || !targetBG || !isf) {
+                alert('Please enter at least Current BG, Target BG, and ISF to calculate.');
+                return;
+            }
+
+            if (currentBG <= 0 || targetBG <= 0 || isf <= 0) {
+                alert('Values must be greater than 0.');
+                return;
+            }
+
+            // Calculate correction dose
+            let correctionDose = (currentBG - targetBG) / isf;
+
+            // Calculate meal dose
+            let mealDose = 0;
+            if (carbs > 0 && icr > 0) {
+                mealDose = carbs / icr;
+            }
+
+            // Total dose
+            let totalDose = correctionDose + mealDose;
+
+            // Ensure no negative doses
+            correctionDose = Math.max(0, correctionDose);
+            totalDose = Math.max(0, totalDose);
+
+            // Round to 1 decimal place
+            correctionDose = Math.round(correctionDose * 10) / 10;
+            mealDose = Math.round(mealDose * 10) / 10;
+            totalDose = Math.round(totalDose * 10) / 10;
+
+            // Display results
+            document.getElementById('correctionDose').textContent = correctionDose.toFixed(1);
+            document.getElementById('mealDose').textContent = mealDose.toFixed(1);
+            document.getElementById('totalDose').textContent = totalDose.toFixed(1);
+
+            // Display calculation details
+            const unit = currentUnit === 'mgdl' ? 'mg/dL' : 'mmol/L';
+            document.getElementById('correctionCalc').textContent =
+                `Correction: (${currentBG} - ${targetBG}) ÷ ${isf} = ${correctionDose.toFixed(1)} units`;
+
+            if (carbs > 0 && icr > 0) {
+                document.getElementById('mealCalc').textContent =
+                    `Meal: ${carbs}g ÷ ${icr} = ${mealDose.toFixed(1)} units`;
+            } else {
+                document.getElementById('mealCalc').textContent =
+                    `Meal: No carbohydrates entered`;
+            }
+
+            document.getElementById('totalCalc').textContent =
+                `Total: ${correctionDose.toFixed(1)} + ${mealDose.toFixed(1)} = ${totalDose.toFixed(1)} units`;
+
+            // Show warnings
+            displayWarnings(currentBG, totalDose);
+
+            // Show results section
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function displayWarnings(currentBG, totalDose) {
+            const warnings = [];
+            const warningSection = document.getElementById('warningSection');
+            const warningList = document.getElementById('warningList');
+
+            // Check for low blood sugar
+            const lowBG = currentUnit === 'mgdl' ? 70 : 3.9;
+            if (currentBG < lowBG) {
+                warnings.push('Your blood glucose is low. Consider treating hypoglycemia before taking insulin.');
+            }
+
+            // Check for high dose
+            if (totalDose > 15) {
+                warnings.push('This is a relatively high insulin dose. Please verify your calculations and consider consulting your healthcare provider.');
+            }
+
+            // Check for very high blood sugar
+            const highBG = currentUnit === 'mgdl' ? 300 : 16.7;
+            if (currentBG > highBG) {
+                warnings.push('Your blood glucose is very high. Check for ketones and contact your healthcare provider if needed.');
+            }
+
+            // Display warnings if any
+            if (warnings.length > 0) {
+                warningList.innerHTML = warnings.map(w => `<li>${w}</li>`).join('');
+                warningSection.classList.remove('hidden');
+            } else {
+                warningSection.classList.add('hidden');
+            }
+        }
+
+        // Set default values for demonstration
+        window.addEventListener('load', () => {
+            if (currentUnit === 'mgdl') {
+                currentBGInput.placeholder = 'e.g., 180';
+                targetBGInput.placeholder = 'e.g., 100';
+                isfInput.placeholder = 'e.g., 50';
+            }
+            icrInput.placeholder = 'e.g., 10';
+            carbsInput.placeholder = 'e.g., 45';
+        });
+    </script>
+
+</body>
+</html>
