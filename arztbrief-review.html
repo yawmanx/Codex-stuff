@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arztbrief Review - Medizinische Dokumentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .section.checked {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            opacity: 0.7;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-wrapper {
+            margin-right: 15px;
+        }
+
+        input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            flex-grow: 1;
+        }
+
+        .section.checked .section-title {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .section-content {
+            margin-top: 15px;
+            padding-left: 39px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .section-content ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .section-content li {
+            margin-bottom: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 0 30px 30px 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .check-all-btn {
+            background: #4caf50;
+            color: white;
+        }
+
+        .check-all-btn:hover {
+            background: #388e3c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .progress-bar {
+            margin: 20px 30px;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            text-align: center;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Arztbrief Review System</h1>
+            <p>Medizinische Dokumentation - Checkliste</p>
+        </div>
+
+        <div class="status-indicator" id="statusIndicator">
+            0 von 13 Abschnitten überprüft
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+        </div>
+
+        <div class="content">
+            <div class="section" data-section="patientenadresse">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-patientenadresse" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Patientenadresse</div>
+                </div>
+                <div class="section-content">
+                    Name, Vorname, Geburtsdatum, Anschrift, Kontaktdaten des Patienten überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="brieftyp">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-brieftyp" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Art des Arztbriefes</div>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li>Aufnahmebrief / Einlass</li>
+                        <li>Entlassungsbrief</li>
+                        <li>Verlegungsbrief</li>
+                        <li>Allgemeiner Arztbrief</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section" data-section="hauptdiagnose">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-hauptdiagnose" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Hauptdiagnose</div>
+                </div>
+                <div class="section-content">
+                    Primäre Diagnose mit ICD-10 Code überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="nebendiagnosen">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-nebendiagnosen" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Nebendiagnosen</div>
+                </div>
+                <div class="section-content">
+                    Weitere relevante Diagnosen und Komorbiditäten überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="vorerkrankungen">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-vorerkrankungen" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Vorerkrankungen / Eigenanamnese</div>
+                </div>
+                <div class="section-content">
+                    Bekannte Vorerkrankungen, frühere Operationen, chronische Erkrankungen überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="medikamente">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-medikamente" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Mitgebrachte Medikation</div>
+                </div>
+                <div class="section-content">
+                    Hausmedikation, Dosierung, Einnahmezeiten überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="labor">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-labor" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Laborergebnisse</div>
+                </div>
+                <div class="section-content">
+                    Blutbild, Gerinnung, Elektrolyte, Nierenwerte, Leberwerte, weitere Laborparameter überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="diagnostik">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-diagnostik" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Diagnostische Ergebnisse</div>
+                </div>
+                <div class="section-content">
+                    Röntgen, CT, MRT, Ultraschall, EKG, weitere bildgebende/funktionelle Diagnostik überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="anamnese">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-anamnese" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Anamnese / Aktuelle Anamnese</div>
+                </div>
+                <div class="section-content">
+                    Grund der Vorstellung, Beschwerden, Symptome, Krankheitsverlauf überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="ereignisse">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-ereignisse" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Ereignisgeschichte</div>
+                </div>
+                <div class="section-content">
+                    Zeitlicher Verlauf der Ereignisse, die zur Aufnahme geführt haben, überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="koerperliche-untersuchung">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-koerperliche-untersuchung" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Körperliche Untersuchung</div>
+                </div>
+                <div class="section-content">
+                    Befunde der körperlichen Untersuchung, Vitalparameter, Organsysteme überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="epikrise">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-epikrise" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Epikrise</div>
+                </div>
+                <div class="section-content">
+                    Zusammenfassung des stationären Aufenthalts, Behandlungsverlauf, Procedere überprüfen
+                </div>
+            </div>
+
+            <div class="section" data-section="gesamtuebersicht">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-gesamtuebersicht" onchange="updateProgress()">
+                    </div>
+                    <div class="section-title">Gesamtübersicht des Arztbriefes</div>
+                </div>
+                <div class="section-content">
+                    Vollständigkeit, Plausibilität, formale Korrektheit, Empfehlungen für weiterbehandelnde Ärzte überprüfen
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="check-all-btn" onclick="checkAll()">Alle markieren</button>
+            <button class="reset-btn" onclick="resetAll()">Zurücksetzen für nächsten Patienten</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const checkbox = header.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const sections = document.querySelectorAll('.section');
+            let checkedCount = 0;
+
+            checkboxes.forEach((checkbox, index) => {
+                if (checkbox.checked) {
+                    checkedCount++;
+                    sections[index].classList.add('checked');
+                } else {
+                    sections[index].classList.remove('checked');
+                }
+            });
+
+            const total = checkboxes.length;
+            const percentage = Math.round((checkedCount / total) * 100);
+
+            const progressFill = document.getElementById('progressFill');
+            const statusIndicator = document.getElementById('statusIndicator');
+
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+            statusIndicator.textContent = `${checkedCount} von ${total} Abschnitten überprüft`;
+
+            if (checkedCount === total) {
+                statusIndicator.style.color = '#4caf50';
+                statusIndicator.textContent = 'Alle Abschnitte überprüft!';
+            } else {
+                statusIndicator.style.color = '#667eea';
+            }
+        }
+
+        function resetAll() {
+            if (confirm('Möchten Sie wirklich alle Markierungen zurücksetzen?')) {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateProgress();
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function checkAll() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateProgress();
+        }
+
+        // Initialize progress on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
