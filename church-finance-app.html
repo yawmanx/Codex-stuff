@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Church Financial Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #bdc3c7;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, #1a252f 100%);
+            color: var(--white);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--secondary-color);
+        }
+
+        .nav-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left-color: var(--secondary-color);
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        .card-header h3 {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-info h4 {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-info p {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--white);
+        }
+
+        .stat-icon.income {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+        }
+
+        .stat-icon.expense {
+            background: linear-gradient(135deg, var(--danger-color), #e67e22);
+        }
+
+        .stat-icon.pledge {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+        }
+
+        .stat-icon.balance {
+            background: linear-gradient(135deg, var(--warning-color), #f4d03f);
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+        }
+
+        thead {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--light-bg);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--light-bg);
+        }
+
+        tbody td {
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: #d5f4e6;
+            color: var(--success-color);
+        }
+
+        .badge-warning {
+            background: #fef5e7;
+            color: var(--warning-color);
+        }
+
+        .badge-danger {
+            background: #fadbd8;
+            color: var(--danger-color);
+        }
+
+        .badge-info {
+            background: #d6eaf8;
+            color: var(--secondary-color);
+        }
+
+        /* Action buttons in tables */
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        .modal-header h3 {
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .close-modal:hover {
+            color: var(--danger-color);
+        }
+
+        /* Filter section */
+        .filter-section {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Summary box */
+        .summary-box {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .summary-box h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-item h4 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .summary-item p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Pledge payment form */
+        .payment-history {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .payment-item {
+            background: var(--white);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Icons (using unicode symbols) */
+        .icon::before {
+            content: attr(data-icon);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d5f4e6;
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .alert-error {
+            background: #fadbd8;
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Print styles */
+        @media print {
+            .sidebar, .header-actions, .btn, .filter-section {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>⛪ Church Finance</h1>
+                <p>Management System</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="dashboard">
+                    <span>📊</span>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-section="income">
+                    <span>💰</span>
+                    <span>Income</span>
+                </li>
+                <li class="nav-item" data-section="expenditure">
+                    <span>💸</span>
+                    <span>Expenditure</span>
+                </li>
+                <li class="nav-item" data-section="pledges">
+                    <span>🤝</span>
+                    <span>Pledges</span>
+                </li>
+                <li class="nav-item" data-section="reports">
+                    <span>📈</span>
+                    <span>Reports</span>
+                </li>
+                <li class="nav-item" data-section="settings">
+                    <span>⚙️</span>
+                    <span>Data Management</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <div class="header">
+                    <h2>Dashboard</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h4>Total Income</h4>
+                            <p id="dashTotalIncome">$0.00</p>
+                        </div>
+                        <div class="stat-icon income">💰</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h4>Total Expenditure</h4>
+                            <p id="dashTotalExpense">$0.00</p>
+                        </div>
+                        <div class="stat-icon expense">💸</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h4>Net Balance</h4>
+                            <p id="dashNetBalance">$0.00</p>
+                        </div>
+                        <div class="stat-icon balance">💼</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h4>Total Pledges</h4>
+                            <p id="dashTotalPledges">$0.00</p>
+                        </div>
+                        <div class="stat-icon pledge">🤝</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Transactions</h3>
+                    </div>
+                    <div class="table-container" id="recentTransactions">
+                        <div class="empty-state">
+                            <div>📋</div>
+                            <h4>No recent transactions</h4>
+                            <p>Start by adding income or expenditure</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Active Pledges</h3>
+                    </div>
+                    <div id="activePledgesPreview">
+                        <div class="empty-state">
+                            <div>🤝</div>
+                            <h4>No active pledges</h4>
+                            <p>Start by recording pledges</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Income Section -->
+            <section id="income" class="section">
+                <div class="header">
+                    <h2>Income Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showAddIncomeForm()">+ Add Income</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>From Date</label>
+                                <input type="date" id="incomeFilterFrom">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>To Date</label>
+                                <input type="date" id="incomeFilterTo">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Category</label>
+                                <select id="incomeFilterCategory">
+                                    <option value="">All Categories</option>
+                                    <option value="Tithes">Tithes</option>
+                                    <option value="Offerings">Offerings</option>
+                                    <option value="Donations">Donations</option>
+                                    <option value="Fundraising">Fundraising</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="filterIncome()">Filter</button>
+                            <button class="btn btn-secondary" onclick="clearIncomeFilter()">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="summary-box">
+                        <h3>Income Summary</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <h4>Total Income</h4>
+                                <p id="incomeTotalAmount">$0.00</p>
+                            </div>
+                            <div class="summary-item">
+                                <h4>Number of Entries</h4>
+                                <p id="incomeCount">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="incomeTableContainer">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Source</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="incomeTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenditure Section -->
+            <section id="expenditure" class="section">
+                <div class="header">
+                    <h2>Expenditure Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showAddExpenditureForm()">+ Add Expenditure</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>From Date</label>
+                                <input type="date" id="expenseFilterFrom">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>To Date</label>
+                                <input type="date" id="expenseFilterTo">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Category</label>
+                                <select id="expenseFilterCategory">
+                                    <option value="">All Categories</option>
+                                    <option value="Salaries">Salaries</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Outreach">Outreach</option>
+                                    <option value="Equipment">Equipment</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="filterExpenditure()">Filter</button>
+                            <button class="btn btn-secondary" onclick="clearExpenditureFilter()">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="summary-box">
+                        <h3>Expenditure Summary</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <h4>Total Expenditure</h4>
+                                <p id="expenseTotalAmount">$0.00</p>
+                            </div>
+                            <div class="summary-item">
+                                <h4>Number of Entries</h4>
+                                <p id="expenseCount">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="expenditureTableContainer">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenditureTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pledges Section -->
+            <section id="pledges" class="section">
+                <div class="header">
+                    <h2>Pledge Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showAddPledgeForm()">+ Add Pledge</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Status</label>
+                                <select id="pledgeFilterStatus" onchange="filterPledges()">
+                                    <option value="">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Overdue">Overdue</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Search Member</label>
+                                <input type="text" id="pledgeFilterMember" placeholder="Member name" oninput="filterPledges()">
+                            </div>
+                            <button class="btn btn-secondary" onclick="clearPledgeFilter()">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="summary-box">
+                        <h3>Pledge Summary</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <h4>Total Pledges</h4>
+                                <p id="pledgeTotalAmount">$0.00</p>
+                            </div>
+                            <div class="summary-item">
+                                <h4>Amount Paid</h4>
+                                <p id="pledgePaidAmount">$0.00</p>
+                            </div>
+                            <div class="summary-item">
+                                <h4>Outstanding</h4>
+                                <p id="pledgeOutstandingAmount">$0.00</p>
+                            </div>
+                            <div class="summary-item">
+                                <h4>Active Pledges</h4>
+                                <p id="pledgeActiveCount">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="pledgesTableContainer">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Member Name</th>
+                                    <th>Total Amount</th>
+                                    <th>Amount Paid</th>
+                                    <th>Outstanding</th>
+                                    <th>Weekly Amount</th>
+                                    <th>Start Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pledgesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="section">
+                <div class="header">
+                    <h2>Financial Reports</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                        <button class="btn btn-secondary" onclick="exportReportPDF()">📄 Export PDF</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="filter-section">
+                        <div class="filter-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Report Period</label>
+                                <select id="reportPeriod" onchange="generateReport()">
+                                    <option value="all">All Time</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="year">This Year</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;" id="reportFromGroup" style="display: none;">
+                                <label>From Date</label>
+                                <input type="date" id="reportFilterFrom">
+                            </div>
+                            <div class="form-group" style="flex: 1;" id="reportToGroup" style="display: none;">
+                                <label>To Date</label>
+                                <input type="date" id="reportFilterTo">
+                            </div>
+                            <button class="btn btn-secondary" onclick="generateReport()">Generate Report</button>
+                        </div>
+                    </div>
+
+                    <div id="reportContent">
+                        <div class="summary-box">
+                            <h3>Financial Overview</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <h4>Total Income</h4>
+                                    <p id="reportTotalIncome">$0.00</p>
+                                </div>
+                                <div class="summary-item">
+                                    <h4>Total Expenditure</h4>
+                                    <p id="reportTotalExpense">$0.00</p>
+                                </div>
+                                <div class="summary-item">
+                                    <h4>Net Balance</h4>
+                                    <p id="reportNetBalance">$0.00</p>
+                                </div>
+                                <div class="summary-item">
+                                    <h4>Pledge Collections</h4>
+                                    <p id="reportPledgeCollections">$0.00</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Income by Category</h3>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportIncomeCategoryBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Expenditure by Category</h3>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportExpenseCategoryBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings/Data Management Section -->
+            <section id="settings" class="section">
+                <div class="header">
+                    <h2>Data Management</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Import Data</h3>
+                    </div>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">
+                        Import previous financial data from JSON file. The file should contain income, expenditure, and pledge records.
+                    </p>
+                    <div class="form-group">
+                        <label>Select JSON File</label>
+                        <input type="file" id="importFile" accept=".json" onchange="importData()">
+                    </div>
+                    <div id="importAlert"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Export Data</h3>
+                    </div>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">
+                        Export all financial data including income, expenditure, and pledges to a JSON file for backup or transfer.
+                    </p>
+                    <button class="btn btn-primary" onclick="exportData()">📥 Export All Data</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Clear All Data</h3>
+                    </div>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">
+                        <strong>Warning:</strong> This will permanently delete all income, expenditure, and pledge records. This action cannot be undone.
+                    </p>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Income Modal -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Income</h3>
+                <button class="close-modal" onclick="closeModal('incomeModal')">×</button>
+            </div>
+            <form onsubmit="addIncome(event)">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="incomeDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Source *</label>
+                    <input type="text" id="incomeSource" placeholder="e.g., John Doe, Special Offering" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="incomeCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Tithes">Tithes</option>
+                        <option value="Offerings">Offerings</option>
+                        <option value="Donations">Donations</option>
+                        <option value="Fundraising">Fundraising</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Amount *</label>
+                    <input type="number" id="incomeAmount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="incomeDescription" placeholder="Additional details (optional)"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">Save Income</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('incomeModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expenditure Modal -->
+    <div id="expenditureModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Expenditure</h3>
+                <button class="close-modal" onclick="closeModal('expenditureModal')">×</button>
+            </div>
+            <form onsubmit="addExpenditure(event)">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="expenditureDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="expenditureCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Salaries">Salaries</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Outreach">Outreach</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Amount *</label>
+                    <input type="number" id="expenditureAmount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="expenditureDescription" placeholder="Describe the expenditure" required></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">Save Expenditure</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('expenditureModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Pledge Modal -->
+    <div id="pledgeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Pledge</h3>
+                <button class="close-modal" onclick="closeModal('pledgeModal')">×</button>
+            </div>
+            <form onsubmit="addPledge(event)">
+                <div class="form-group">
+                    <label>Member Name *</label>
+                    <input type="text" id="pledgeMemberName" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Total Pledge Amount *</label>
+                    <input type="number" id="pledgeTotalAmount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Weekly Payment Amount *</label>
+                    <input type="number" id="pledgeWeeklyAmount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Date *</label>
+                    <input type="date" id="pledgeStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Expected End Date</label>
+                    <input type="date" id="pledgeEndDate">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="pledgeNotes" placeholder="Additional information (optional)"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">Save Pledge</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('pledgeModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Pledge Payment</h3>
+                <button class="close-modal" onclick="closeModal('paymentModal')">×</button>
+            </div>
+            <div id="pledgeInfo" style="background: var(--light-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            </div>
+            <form onsubmit="recordPayment(event)">
+                <input type="hidden" id="paymentPledgeId">
+                <div class="form-group">
+                    <label>Payment Date *</label>
+                    <input type="date" id="paymentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Amount *</label>
+                    <input type="number" id="paymentAmount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="paymentNotes" placeholder="Payment details (optional)"></textarea>
+                </div>
+                <div class="payment-history" id="paymentHistory">
+                    <h4 style="margin-bottom: 10px;">Payment History</h4>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">Record Payment</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('paymentModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let incomeData = JSON.parse(localStorage.getItem('churchIncome')) || [];
+        let expenditureData = JSON.parse(localStorage.getItem('churchExpenditure')) || [];
+        let pledgeData = JSON.parse(localStorage.getItem('churchPledges')) || [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('incomeDate').value = today;
+            document.getElementById('expenditureDate').value = today;
+            document.getElementById('pledgeStartDate').value = today;
+            document.getElementById('paymentDate').value = today;
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    showSection(section);
+                });
+            });
+
+            // Period selector
+            document.getElementById('reportPeriod').addEventListener('change', function() {
+                const customGroups = ['reportFromGroup', 'reportToGroup'];
+                if (this.value === 'custom') {
+                    customGroups.forEach(id => {
+                        document.getElementById(id).style.display = 'block';
+                    });
+                } else {
+                    customGroups.forEach(id => {
+                        document.getElementById(id).style.display = 'none';
+                    });
+                }
+            });
+
+            // Initial render
+            updateDashboard();
+            renderIncome();
+            renderExpenditure();
+            renderPledges();
+            generateReport();
+        });
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+            // Update section when shown
+            if (sectionId === 'dashboard') {
+                updateDashboard();
+            } else if (sectionId === 'reports') {
+                generateReport();
+            }
+        }
+
+        // Modal Functions
+        function showAddIncomeForm() {
+            document.getElementById('incomeModal').classList.add('active');
+        }
+
+        function showAddExpenditureForm() {
+            document.getElementById('expenditureModal').classList.add('active');
+        }
+
+        function showAddPledgeForm() {
+            document.getElementById('pledgeModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Income Functions
+        function addIncome(event) {
+            event.preventDefault();
+
+            const income = {
+                id: Date.now(),
+                date: document.getElementById('incomeDate').value,
+                source: document.getElementById('incomeSource').value,
+                category: document.getElementById('incomeCategory').value,
+                amount: parseFloat(document.getElementById('incomeAmount').value),
+                description: document.getElementById('incomeDescription').value,
+                timestamp: new Date().toISOString()
+            };
+
+            incomeData.push(income);
+            localStorage.setItem('churchIncome', JSON.stringify(incomeData));
+
+            closeModal('incomeModal');
+            event.target.reset();
+            document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+
+            renderIncome();
+            updateDashboard();
+            showAlert('Income added successfully!', 'success');
+        }
+
+        function renderIncome(filtered = null) {
+            const data = filtered || incomeData;
+            const tbody = document.getElementById('incomeTableBody');
+            const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div>💰</div><h4>No income records</h4><p>Start by adding income</p></td></tr>';
+            } else {
+                tbody.innerHTML = sortedData.map(income => `
+                    <tr>
+                        <td>${formatDate(income.date)}</td>
+                        <td>${income.source}</td>
+                        <td><span class="badge badge-success">${income.category}</span></td>
+                        <td><strong>$${income.amount.toFixed(2)}</strong></td>
+                        <td>${income.description || '-'}</td>
+                        <td>
+                            <button class="btn btn-danger action-btn" onclick="deleteIncome(${income.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update summary
+            const total = sortedData.reduce((sum, item) => sum + item.amount, 0);
+            document.getElementById('incomeTotalAmount').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('incomeCount').textContent = sortedData.length;
+        }
+
+        function deleteIncome(id) {
+            if (confirm('Are you sure you want to delete this income record?')) {
+                incomeData = incomeData.filter(item => item.id !== id);
+                localStorage.setItem('churchIncome', JSON.stringify(incomeData));
+                renderIncome();
+                updateDashboard();
+                showAlert('Income record deleted successfully!', 'success');
+            }
+        }
+
+        function filterIncome() {
+            const from = document.getElementById('incomeFilterFrom').value;
+            const to = document.getElementById('incomeFilterTo').value;
+            const category = document.getElementById('incomeFilterCategory').value;
+
+            let filtered = incomeData;
+
+            if (from) {
+                filtered = filtered.filter(item => item.date >= from);
+            }
+            if (to) {
+                filtered = filtered.filter(item => item.date <= to);
+            }
+            if (category) {
+                filtered = filtered.filter(item => item.category === category);
+            }
+
+            renderIncome(filtered);
+        }
+
+        function clearIncomeFilter() {
+            document.getElementById('incomeFilterFrom').value = '';
+            document.getElementById('incomeFilterTo').value = '';
+            document.getElementById('incomeFilterCategory').value = '';
+            renderIncome();
+        }
+
+        // Expenditure Functions
+        function addExpenditure(event) {
+            event.preventDefault();
+
+            const expenditure = {
+                id: Date.now(),
+                date: document.getElementById('expenditureDate').value,
+                category: document.getElementById('expenditureCategory').value,
+                amount: parseFloat(document.getElementById('expenditureAmount').value),
+                description: document.getElementById('expenditureDescription').value,
+                timestamp: new Date().toISOString()
+            };
+
+            expenditureData.push(expenditure);
+            localStorage.setItem('churchExpenditure', JSON.stringify(expenditureData));
+
+            closeModal('expenditureModal');
+            event.target.reset();
+            document.getElementById('expenditureDate').value = new Date().toISOString().split('T')[0];
+
+            renderExpenditure();
+            updateDashboard();
+            showAlert('Expenditure added successfully!', 'success');
+        }
+
+        function renderExpenditure(filtered = null) {
+            const data = filtered || expenditureData;
+            const tbody = document.getElementById('expenditureTableBody');
+            const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div>💸</div><h4>No expenditure records</h4><p>Start by adding expenditure</p></td></tr>';
+            } else {
+                tbody.innerHTML = sortedData.map(expense => `
+                    <tr>
+                        <td>${formatDate(expense.date)}</td>
+                        <td><span class="badge badge-danger">${expense.category}</span></td>
+                        <td><strong>$${expense.amount.toFixed(2)}</strong></td>
+                        <td>${expense.description}</td>
+                        <td>
+                            <button class="btn btn-danger action-btn" onclick="deleteExpenditure(${expense.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update summary
+            const total = sortedData.reduce((sum, item) => sum + item.amount, 0);
+            document.getElementById('expenseTotalAmount').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('expenseCount').textContent = sortedData.length;
+        }
+
+        function deleteExpenditure(id) {
+            if (confirm('Are you sure you want to delete this expenditure record?')) {
+                expenditureData = expenditureData.filter(item => item.id !== id);
+                localStorage.setItem('churchExpenditure', JSON.stringify(expenditureData));
+                renderExpenditure();
+                updateDashboard();
+                showAlert('Expenditure record deleted successfully!', 'success');
+            }
+        }
+
+        function filterExpenditure() {
+            const from = document.getElementById('expenseFilterFrom').value;
+            const to = document.getElementById('expenseFilterTo').value;
+            const category = document.getElementById('expenseFilterCategory').value;
+
+            let filtered = expenditureData;
+
+            if (from) {
+                filtered = filtered.filter(item => item.date >= from);
+            }
+            if (to) {
+                filtered = filtered.filter(item => item.date <= to);
+            }
+            if (category) {
+                filtered = filtered.filter(item => item.category === category);
+            }
+
+            renderExpenditure(filtered);
+        }
+
+        function clearExpenditureFilter() {
+            document.getElementById('expenseFilterFrom').value = '';
+            document.getElementById('expenseFilterTo').value = '';
+            document.getElementById('expenseFilterCategory').value = '';
+            renderExpenditure();
+        }
+
+        // Pledge Functions
+        function addPledge(event) {
+            event.preventDefault();
+
+            const pledge = {
+                id: Date.now(),
+                memberName: document.getElementById('pledgeMemberName').value,
+                totalAmount: parseFloat(document.getElementById('pledgeTotalAmount').value),
+                amountPaid: 0,
+                weeklyAmount: parseFloat(document.getElementById('pledgeWeeklyAmount').value),
+                startDate: document.getElementById('pledgeStartDate').value,
+                endDate: document.getElementById('pledgeEndDate').value,
+                notes: document.getElementById('pledgeNotes').value,
+                status: 'Active',
+                payments: [],
+                timestamp: new Date().toISOString()
+            };
+
+            pledgeData.push(pledge);
+            localStorage.setItem('churchPledges', JSON.stringify(pledgeData));
+
+            closeModal('pledgeModal');
+            event.target.reset();
+            document.getElementById('pledgeStartDate').value = new Date().toISOString().split('T')[0];
+
+            renderPledges();
+            updateDashboard();
+            showAlert('Pledge added successfully!', 'success');
+        }
+
+        function renderPledges(filtered = null) {
+            const data = filtered || pledgeData;
+            const tbody = document.getElementById('pledgesTableBody');
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div>🤝</div><h4>No pledge records</h4><p>Start by recording pledges</p></td></tr>';
+            } else {
+                tbody.innerHTML = data.map(pledge => {
+                    const outstanding = pledge.totalAmount - pledge.amountPaid;
+                    const progress = (pledge.amountPaid / pledge.totalAmount * 100).toFixed(1);
+                    let statusBadge = 'badge-info';
+
+                    if (pledge.status === 'Completed') {
+                        statusBadge = 'badge-success';
+                    } else if (pledge.status === 'Overdue') {
+                        statusBadge = 'badge-danger';
+                    } else if (pledge.status === 'Active') {
+                        statusBadge = 'badge-warning';
+                    }
+
+                    return `
+                        <tr>
+                            <td><strong>${pledge.memberName}</strong></td>
+                            <td>$${pledge.totalAmount.toFixed(2)}</td>
+                            <td><span class="badge badge-success">$${pledge.amountPaid.toFixed(2)}</span> (${progress}%)</td>
+                            <td>$${outstanding.toFixed(2)}</td>
+                            <td>$${pledge.weeklyAmount.toFixed(2)}</td>
+                            <td>${formatDate(pledge.startDate)}</td>
+                            <td><span class="badge ${statusBadge}">${pledge.status}</span></td>
+                            <td>
+                                <button class="btn btn-primary action-btn" onclick="showPaymentModal(${pledge.id})">Pay</button>
+                                <button class="btn btn-danger action-btn" onclick="deletePledge(${pledge.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Update summary
+            const totalPledges = data.reduce((sum, item) => sum + item.totalAmount, 0);
+            const totalPaid = data.reduce((sum, item) => sum + item.amountPaid, 0);
+            const totalOutstanding = totalPledges - totalPaid;
+            const activeCount = data.filter(p => p.status === 'Active').length;
+
+            document.getElementById('pledgeTotalAmount').textContent = `$${totalPledges.toFixed(2)}`;
+            document.getElementById('pledgePaidAmount').textContent = `$${totalPaid.toFixed(2)}`;
+            document.getElementById('pledgeOutstandingAmount').textContent = `$${totalOutstanding.toFixed(2)}`;
+            document.getElementById('pledgeActiveCount').textContent = activeCount;
+        }
+
+        function deletePledge(id) {
+            if (confirm('Are you sure you want to delete this pledge? This will also delete all payment history.')) {
+                pledgeData = pledgeData.filter(item => item.id !== id);
+                localStorage.setItem('churchPledges', JSON.stringify(pledgeData));
+                renderPledges();
+                updateDashboard();
+                showAlert('Pledge deleted successfully!', 'success');
+            }
+        }
+
+        function filterPledges() {
+            const status = document.getElementById('pledgeFilterStatus').value;
+            const member = document.getElementById('pledgeFilterMember').value.toLowerCase();
+
+            let filtered = pledgeData;
+
+            if (status) {
+                filtered = filtered.filter(item => item.status === status);
+            }
+            if (member) {
+                filtered = filtered.filter(item => item.memberName.toLowerCase().includes(member));
+            }
+
+            renderPledges(filtered);
+        }
+
+        function clearPledgeFilter() {
+            document.getElementById('pledgeFilterStatus').value = '';
+            document.getElementById('pledgeFilterMember').value = '';
+            renderPledges();
+        }
+
+        function showPaymentModal(pledgeId) {
+            const pledge = pledgeData.find(p => p.id === pledgeId);
+            if (!pledge) return;
+
+            document.getElementById('paymentPledgeId').value = pledgeId;
+            document.getElementById('paymentAmount').value = pledge.weeklyAmount;
+
+            const outstanding = pledge.totalAmount - pledge.amountPaid;
+            document.getElementById('pledgeInfo').innerHTML = `
+                <h4>${pledge.memberName}</h4>
+                <p>Total Pledge: <strong>$${pledge.totalAmount.toFixed(2)}</strong></p>
+                <p>Amount Paid: <strong>$${pledge.amountPaid.toFixed(2)}</strong></p>
+                <p>Outstanding: <strong>$${outstanding.toFixed(2)}</strong></p>
+                <p>Weekly Amount: <strong>$${pledge.weeklyAmount.toFixed(2)}</strong></p>
+            `;
+
+            // Show payment history
+            const historyDiv = document.getElementById('paymentHistory');
+            if (pledge.payments && pledge.payments.length > 0) {
+                historyDiv.innerHTML = '<h4 style="margin-bottom: 10px;">Payment History</h4>' +
+                    pledge.payments.map(payment => `
+                        <div class="payment-item">
+                            <div>
+                                <strong>${formatDate(payment.date)}</strong>
+                                ${payment.notes ? `<br><small>${payment.notes}</small>` : ''}
+                            </div>
+                            <strong>$${payment.amount.toFixed(2)}</strong>
+                        </div>
+                    `).join('');
+            } else {
+                historyDiv.innerHTML = '<h4 style="margin-bottom: 10px;">Payment History</h4><p style="color: var(--text-light);">No payments recorded yet</p>';
+            }
+
+            document.getElementById('paymentModal').classList.add('active');
+        }
+
+        function recordPayment(event) {
+            event.preventDefault();
+
+            const pledgeId = parseInt(document.getElementById('paymentPledgeId').value);
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const date = document.getElementById('paymentDate').value;
+            const notes = document.getElementById('paymentNotes').value;
+
+            const pledgeIndex = pledgeData.findIndex(p => p.id === pledgeId);
+            if (pledgeIndex === -1) return;
+
+            const pledge = pledgeData[pledgeIndex];
+            const outstanding = pledge.totalAmount - pledge.amountPaid;
+
+            if (amount > outstanding) {
+                alert(`Payment amount ($${amount.toFixed(2)}) exceeds outstanding balance ($${outstanding.toFixed(2)})`);
+                return;
+            }
+
+            // Record payment
+            const payment = {
+                date: date,
+                amount: amount,
+                notes: notes,
+                timestamp: new Date().toISOString()
+            };
+
+            pledge.payments.push(payment);
+            pledge.amountPaid += amount;
+
+            // Update status
+            if (pledge.amountPaid >= pledge.totalAmount) {
+                pledge.status = 'Completed';
+            }
+
+            // Also add to income
+            const income = {
+                id: Date.now(),
+                date: date,
+                source: `Pledge Payment - ${pledge.memberName}`,
+                category: 'Pledges',
+                amount: amount,
+                description: `Pledge payment${notes ? ': ' + notes : ''}`,
+                timestamp: new Date().toISOString()
+            };
+            incomeData.push(income);
+
+            // Save
+            localStorage.setItem('churchPledges', JSON.stringify(pledgeData));
+            localStorage.setItem('churchIncome', JSON.stringify(incomeData));
+
+            closeModal('paymentModal');
+            event.target.reset();
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+
+            renderPledges();
+            renderIncome();
+            updateDashboard();
+            showAlert('Payment recorded successfully!', 'success');
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            const totalIncome = incomeData.reduce((sum, item) => sum + item.amount, 0);
+            const totalExpense = expenditureData.reduce((sum, item) => sum + item.amount, 0);
+            const netBalance = totalIncome - totalExpense;
+            const totalPledges = pledgeData.reduce((sum, item) => sum + item.totalAmount, 0);
+
+            document.getElementById('dashTotalIncome').textContent = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('dashTotalExpense').textContent = `$${totalExpense.toFixed(2)}`;
+            document.getElementById('dashNetBalance').textContent = `$${netBalance.toFixed(2)}`;
+            document.getElementById('dashTotalPledges').textContent = `$${totalPledges.toFixed(2)}`;
+
+            // Recent transactions
+            const allTransactions = [
+                ...incomeData.map(item => ({...item, type: 'income'})),
+                ...expenditureData.map(item => ({...item, type: 'expense'}))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+
+            const transactionsDiv = document.getElementById('recentTransactions');
+            if (allTransactions.length === 0) {
+                transactionsDiv.innerHTML = '<div class="empty-state"><div>📋</div><h4>No recent transactions</h4><p>Start by adding income or expenditure</p></div>';
+            } else {
+                transactionsDiv.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allTransactions.map(trans => `
+                                <tr>
+                                    <td>${formatDate(trans.date)}</td>
+                                    <td><span class="badge ${trans.type === 'income' ? 'badge-success' : 'badge-danger'}">${trans.type === 'income' ? 'Income' : 'Expense'}</span></td>
+                                    <td>${trans.type === 'income' ? trans.source : trans.description}</td>
+                                    <td><strong>$${trans.amount.toFixed(2)}</strong></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            // Active pledges
+            const activePledges = pledgeData.filter(p => p.status === 'Active').slice(0, 5);
+            const pledgesDiv = document.getElementById('activePledgesPreview');
+
+            if (activePledges.length === 0) {
+                pledgesDiv.innerHTML = '<div class="empty-state"><div>🤝</div><h4>No active pledges</h4><p>All pledges are completed or no pledges recorded</p></div>';
+            } else {
+                pledgesDiv.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Outstanding</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activePledges.map(pledge => {
+                                const progress = (pledge.amountPaid / pledge.totalAmount * 100).toFixed(1);
+                                const outstanding = pledge.totalAmount - pledge.amountPaid;
+                                return `
+                                    <tr>
+                                        <td><strong>${pledge.memberName}</strong></td>
+                                        <td>$${pledge.totalAmount.toFixed(2)}</td>
+                                        <td>$${pledge.amountPaid.toFixed(2)}</td>
+                                        <td>$${outstanding.toFixed(2)}</td>
+                                        <td>${progress}%</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+
+        // Reports Functions
+        function generateReport() {
+            const period = document.getElementById('reportPeriod').value;
+            let fromDate, toDate;
+
+            const now = new Date();
+
+            switch(period) {
+                case 'week':
+                    fromDate = new Date(now.setDate(now.getDate() - 7));
+                    toDate = new Date();
+                    break;
+                case 'month':
+                    fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    toDate = new Date();
+                    break;
+                case 'year':
+                    fromDate = new Date(now.getFullYear(), 0, 1);
+                    toDate = new Date();
+                    break;
+                case 'custom':
+                    fromDate = new Date(document.getElementById('reportFilterFrom').value);
+                    toDate = new Date(document.getElementById('reportFilterTo').value);
+                    break;
+                default:
+                    fromDate = new Date(0);
+                    toDate = new Date();
+            }
+
+            // Filter data
+            const filteredIncome = incomeData.filter(item => {
+                const date = new Date(item.date);
+                return date >= fromDate && date <= toDate;
+            });
+
+            const filteredExpense = expenditureData.filter(item => {
+                const date = new Date(item.date);
+                return date >= fromDate && date <= toDate;
+            });
+
+            const totalIncome = filteredIncome.reduce((sum, item) => sum + item.amount, 0);
+            const totalExpense = filteredExpense.reduce((sum, item) => sum + item.amount, 0);
+            const netBalance = totalIncome - totalExpense;
+
+            // Calculate pledge collections in period
+            const pledgeCollections = pledgeData.reduce((sum, pledge) => {
+                if (pledge.payments) {
+                    const periodPayments = pledge.payments.filter(payment => {
+                        const paymentDate = new Date(payment.date);
+                        return paymentDate >= fromDate && paymentDate <= toDate;
+                    });
+                    return sum + periodPayments.reduce((pSum, p) => pSum + p.amount, 0);
+                }
+                return sum;
+            }, 0);
+
+            document.getElementById('reportTotalIncome').textContent = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('reportTotalExpense').textContent = `$${totalExpense.toFixed(2)}`;
+            document.getElementById('reportNetBalance').textContent = `$${netBalance.toFixed(2)}`;
+            document.getElementById('reportPledgeCollections').textContent = `$${pledgeCollections.toFixed(2)}`;
+
+            // Income by category
+            const incomeByCategory = {};
+            filteredIncome.forEach(item => {
+                incomeByCategory[item.category] = (incomeByCategory[item.category] || 0) + item.amount;
+            });
+
+            const incomeCategoryBody = document.getElementById('reportIncomeCategoryBody');
+            if (Object.keys(incomeByCategory).length === 0) {
+                incomeCategoryBody.innerHTML = '<tr><td colspan="3" class="empty-state">No income data for selected period</td></tr>';
+            } else {
+                incomeCategoryBody.innerHTML = Object.entries(incomeByCategory)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([category, amount]) => {
+                        const percentage = (amount / totalIncome * 100).toFixed(1);
+                        return `
+                            <tr>
+                                <td><span class="badge badge-success">${category}</span></td>
+                                <td><strong>$${amount.toFixed(2)}</strong></td>
+                                <td>${percentage}%</td>
+                            </tr>
+                        `;
+                    }).join('');
+            }
+
+            // Expenditure by category
+            const expenseByCategory = {};
+            filteredExpense.forEach(item => {
+                expenseByCategory[item.category] = (expenseByCategory[item.category] || 0) + item.amount;
+            });
+
+            const expenseCategoryBody = document.getElementById('reportExpenseCategoryBody');
+            if (Object.keys(expenseByCategory).length === 0) {
+                expenseCategoryBody.innerHTML = '<tr><td colspan="3" class="empty-state">No expenditure data for selected period</td></tr>';
+            } else {
+                expenseCategoryBody.innerHTML = Object.entries(expenseByCategory)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([category, amount]) => {
+                        const percentage = (amount / totalExpense * 100).toFixed(1);
+                        return `
+                            <tr>
+                                <td><span class="badge badge-danger">${category}</span></td>
+                                <td><strong>$${amount.toFixed(2)}</strong></td>
+                                <td>${percentage}%</td>
+                            </tr>
+                        `;
+                    }).join('');
+            }
+        }
+
+        // Data Management Functions
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (data.income) {
+                        incomeData = [...incomeData, ...data.income];
+                        localStorage.setItem('churchIncome', JSON.stringify(incomeData));
+                    }
+
+                    if (data.expenditure) {
+                        expenditureData = [...expenditureData, ...data.expenditure];
+                        localStorage.setItem('churchExpenditure', JSON.stringify(expenditureData));
+                    }
+
+                    if (data.pledges) {
+                        pledgeData = [...pledgeData, ...data.pledges];
+                        localStorage.setItem('churchPledges', JSON.stringify(pledgeData));
+                    }
+
+                    renderIncome();
+                    renderExpenditure();
+                    renderPledges();
+                    updateDashboard();
+
+                    document.getElementById('importAlert').innerHTML =
+                        '<div class="alert alert-success">✓ Data imported successfully!</div>';
+
+                    setTimeout(() => {
+                        document.getElementById('importAlert').innerHTML = '';
+                    }, 5000);
+
+                } catch (error) {
+                    document.getElementById('importAlert').innerHTML =
+                        '<div class="alert alert-error">✗ Error importing data. Please check file format.</div>';
+                }
+            };
+
+            reader.readAsText(file);
+            fileInput.value = '';
+        }
+
+        function exportData() {
+            const data = {
+                income: incomeData,
+                expenditure: expenditureData,
+                pledges: pledgeData,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `church-finance-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showAlert('Data exported successfully!', 'success');
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ WARNING: This will permanently delete ALL financial records including income, expenditure, and pledges. This action CANNOT be undone. Are you absolutely sure?')) {
+                if (confirm('This is your last chance. Click OK to permanently delete all data, or Cancel to keep your data.')) {
+                    incomeData = [];
+                    expenditureData = [];
+                    pledgeData = [];
+
+                    localStorage.removeItem('churchIncome');
+                    localStorage.removeItem('churchExpenditure');
+                    localStorage.removeItem('churchPledges');
+
+                    renderIncome();
+                    renderExpenditure();
+                    renderPledges();
+                    updateDashboard();
+                    generateReport();
+
+                    showAlert('All data has been cleared', 'success');
+                }
+            }
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function showAlert(message, type) {
+            // This is a simple alert implementation
+            // In production, you might want a more sophisticated notification system
+            alert(message);
+        }
+
+        function exportReportPDF() {
+            // This would require a PDF library in production
+            // For now, we'll just prompt the user to use print
+            alert('Please use the Print Report button and select "Save as PDF" from your browser\'s print dialog.');
+        }
+    </script>
+</body>
+</html>
