@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How X-rays Work - Interactive Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .animation-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            display: none;
+        }
+
+        .scene.active {
+            display: block;
+        }
+
+        /* X-ray Tube Scene */
+        .xray-tube {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 300px;
+        }
+
+        .tube-body {
+            position: absolute;
+            width: 100%;
+            height: 200px;
+            top: 50px;
+            background: linear-gradient(90deg,
+                rgba(100,100,100,0.3) 0%,
+                rgba(150,150,150,0.2) 50%,
+                rgba(100,100,100,0.3) 100%);
+            border: 3px solid #888;
+            border-radius: 20px;
+        }
+
+        .cathode {
+            position: absolute;
+            left: 50px;
+            top: 70px;
+            width: 60px;
+            height: 140px;
+            background: linear-gradient(135deg, #ff6b6b, #c92a2a);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .cathode::before {
+            content: '−';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .anode {
+            position: absolute;
+            right: 50px;
+            top: 80px;
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(135deg, #ffd93d, #ff9800);
+            clip-path: polygon(0 0, 100% 30%, 100% 70%, 0 100%);
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.5);
+        }
+
+        .anode::before {
+            content: '+';
+            position: absolute;
+            top: 50%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .electron {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d4ff;
+            opacity: 0;
+        }
+
+        @keyframes electron-flow {
+            0% {
+                left: 110px;
+                top: 140px;
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                left: 470px;
+                top: 140px;
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        .electron.animated {
+            animation: electron-flow 1.5s ease-in infinite;
+        }
+
+        .electron:nth-child(2) { animation-delay: 0.3s; }
+        .electron:nth-child(3) { animation-delay: 0.6s; }
+        .electron:nth-child(4) { animation-delay: 0.9s; }
+        .electron:nth-child(5) { animation-delay: 1.2s; }
+
+        .xray-beam {
+            position: absolute;
+            right: 120px;
+            top: 140px;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg,
+                rgba(138, 43, 226, 0.8),
+                rgba(138, 43, 226, 0));
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            opacity: 0;
+        }
+
+        @keyframes xray-emit {
+            0% {
+                width: 0;
+                opacity: 1;
+            }
+            50% {
+                width: 300px;
+                opacity: 1;
+            }
+            100% {
+                width: 350px;
+                opacity: 0;
+            }
+        }
+
+        .xray-beam.animated {
+            animation: xray-emit 2s ease-out infinite;
+        }
+
+        /* Bremsstrahlung Scene */
+        .bremsstrahlung-scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .nucleus {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ff6b6b, #c92a2a);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.8);
+        }
+
+        .nucleus::before {
+            content: '+';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .incoming-electron {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00d4ff;
+            left: 10%;
+            top: 30%;
+        }
+
+        @keyframes electron-deflect {
+            0% {
+                left: 10%;
+                top: 30%;
+                opacity: 1;
+            }
+            40% {
+                left: 45%;
+                top: 45%;
+                opacity: 1;
+            }
+            50% {
+                left: 50%;
+                top: 50%;
+                opacity: 1;
+            }
+            100% {
+                left: 70%;
+                top: 70%;
+                opacity: 0.3;
+            }
+        }
+
+        .incoming-electron.animated {
+            animation: electron-deflect 2s ease-in-out infinite;
+        }
+
+        .photon {
+            position: absolute;
+            width: 4px;
+            height: 40px;
+            background: linear-gradient(180deg,
+                rgba(138, 43, 226, 0.9),
+                rgba(138, 43, 226, 0));
+            left: 50%;
+            top: 50%;
+            opacity: 0;
+        }
+
+        @keyframes photon-emit {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(45deg) translateY(0);
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(45deg) translateY(-200px);
+            }
+        }
+
+        .photon.animated {
+            animation: photon-emit 1.5s ease-out infinite;
+            animation-delay: 0.5s;
+        }
+
+        /* Characteristic X-ray Scene */
+        .characteristic-scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .atom {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+        }
+
+        .atom-nucleus {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff6b6b, #c92a2a);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+        }
+
+        .shell {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .k-shell {
+            width: 100px;
+            height: 100px;
+        }
+
+        .l-shell {
+            width: 180px;
+            height: 180px;
+        }
+
+        .m-shell {
+            width: 260px;
+            height: 260px;
+        }
+
+        .shell-electron {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d4ff;
+        }
+
+        .k-shell .shell-electron {
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+        }
+
+        .l-shell .shell-electron {
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+        }
+
+        @keyframes electron-knockout {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateX(-50%) translateY(-50px) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-100px) scale(0.2);
+            }
+        }
+
+        @keyframes electron-transition {
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-40px) scale(1.2);
+            }
+            100% {
+                transform: translateX(-50%) translateY(-80px) scale(1);
+            }
+        }
+
+        .shell-electron.knockout {
+            animation: electron-knockout 1.5s ease-out infinite;
+        }
+
+        .shell-electron.transition {
+            animation: electron-transition 1.5s ease-out infinite;
+            animation-delay: 1s;
+        }
+
+        .characteristic-photon {
+            position: absolute;
+            width: 4px;
+            height: 50px;
+            background: linear-gradient(180deg,
+                rgba(186, 85, 211, 0.9),
+                rgba(186, 85, 211, 0));
+            left: 50%;
+            top: 50%;
+            opacity: 0;
+        }
+
+        @keyframes characteristic-emit {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(-45deg) translateY(0);
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(-45deg) translateY(-200px);
+            }
+        }
+
+        .characteristic-photon.animated {
+            animation: characteristic-emit 1.5s ease-out infinite;
+            animation-delay: 1.5s;
+        }
+
+        /* Photoelectric Effect Scene */
+        .photoelectric-scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .target-atom {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+        }
+
+        .target-nucleus {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ff6b6b, #c92a2a);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
+        }
+
+        .target-shell {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .bound-electron {
+            position: absolute;
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d4ff;
+        }
+
+        .incoming-photon {
+            position: absolute;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg,
+                rgba(138, 43, 226, 0),
+                rgba(138, 43, 226, 0.9));
+            left: 10%;
+            top: 48%;
+            opacity: 0;
+        }
+
+        @keyframes photon-approach {
+            0% {
+                left: 10%;
+                opacity: 1;
+            }
+            50% {
+                left: 40%;
+                opacity: 1;
+            }
+            60% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .incoming-photon.animated {
+            animation: photon-approach 2s ease-in infinite;
+        }
+
+        @keyframes photoelectron-eject {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(1);
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateX(150px) translateY(-50px) scale(0.8);
+            }
+        }
+
+        .bound-electron.ejected {
+            animation: photoelectron-eject 2s ease-out infinite;
+            animation-delay: 1s;
+        }
+
+        /* Compton Scattering Scene */
+        .compton-scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .free-electron {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00d4ff;
+        }
+
+        .compton-photon-in {
+            position: absolute;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg,
+                rgba(138, 43, 226, 0),
+                rgba(138, 43, 226, 0.9));
+            left: 10%;
+            top: 48%;
+            opacity: 0;
+        }
+
+        @keyframes compton-photon-approach {
+            0% {
+                left: 10%;
+                opacity: 1;
+            }
+            45% {
+                left: 45%;
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .compton-photon-in.animated {
+            animation: compton-photon-approach 2.5s ease-in infinite;
+        }
+
+        .compton-photon-out {
+            position: absolute;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(135deg,
+                rgba(100, 149, 237, 0.9),
+                rgba(100, 149, 237, 0));
+            left: 50%;
+            top: 50%;
+            opacity: 0;
+            transform-origin: left center;
+        }
+
+        @keyframes compton-photon-scatter {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(45deg) translateX(0);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(45deg) translateX(150px);
+            }
+        }
+
+        .compton-photon-out.animated {
+            animation: compton-photon-scatter 2.5s ease-out infinite;
+            animation-delay: 1.2s;
+        }
+
+        @keyframes electron-recoil {
+            0% {
+                transform: translate(-50%, -50%);
+            }
+            50% {
+                transform: translate(-50%, -50%);
+            }
+            100% {
+                transform: translate(-20px, 30px);
+            }
+        }
+
+        .free-electron.recoil {
+            animation: electron-recoil 2.5s ease-out infinite;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #ffd93d;
+        }
+
+        .info-box p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        /* Labels */
+        .label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .label-cathode {
+            left: 30px;
+            top: 20px;
+        }
+
+        .label-anode {
+            right: 30px;
+            top: 20px;
+        }
+
+        .label-electrons {
+            left: 50%;
+            top: 10px;
+            transform: translateX(-50%);
+        }
+
+        .label-xrays {
+            right: 50px;
+            top: 100px;
+        }
+
+        /* Energy indicator */
+        .energy-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .energy-value {
+            color: #ffd93d;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .xray-tube {
+                width: 400px;
+                height: 200px;
+            }
+
+            .tube-body {
+                height: 150px;
+            }
+
+            .scene {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ How X-rays Work</h1>
+        <p class="subtitle">Interactive Animation of X-ray Generation and Interaction with Matter</p>
+
+        <div class="controls">
+            <button class="btn active" onclick="showScene('tube')">X-ray Tube</button>
+            <button class="btn" onclick="showScene('bremsstrahlung')">Bremsstrahlung</button>
+            <button class="btn" onclick="showScene('characteristic')">Characteristic X-rays</button>
+            <button class="btn" onclick="showScene('photoelectric')">Photoelectric Effect</button>
+            <button class="btn" onclick="showScene('compton')">Compton Scattering</button>
+        </div>
+
+        <div class="animation-container">
+            <!-- Scene 1: X-ray Tube -->
+            <div class="scene active" id="scene-tube">
+                <div class="xray-tube">
+                    <div class="tube-body"></div>
+                    <div class="cathode"></div>
+                    <div class="anode"></div>
+
+                    <div class="electron animated"></div>
+                    <div class="electron animated"></div>
+                    <div class="electron animated"></div>
+                    <div class="electron animated"></div>
+                    <div class="electron animated"></div>
+
+                    <div class="xray-beam animated"></div>
+                    <div class="xray-beam animated" style="animation-delay: 0.4s; top: 135px;"></div>
+                    <div class="xray-beam animated" style="animation-delay: 0.8s; top: 145px;"></div>
+
+                    <div class="label label-cathode">Cathode (−)</div>
+                    <div class="label label-anode">Anode (+)</div>
+                    <div class="label label-electrons">High-speed Electrons</div>
+                    <div class="label label-xrays">X-rays</div>
+
+                    <div class="energy-indicator">
+                        Voltage: <span class="energy-value">50-150 kV</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 2: Bremsstrahlung -->
+            <div class="scene" id="scene-bremsstrahlung">
+                <div class="bremsstrahlung-scene">
+                    <div class="nucleus"></div>
+                    <div class="incoming-electron animated"></div>
+                    <div class="photon animated"></div>
+                    <div class="photon animated" style="animation-delay: 0.7s; transform: translate(-50%, -50%) rotate(60deg);"></div>
+
+                    <div class="label" style="left: 10%; top: 20%;">
+                        High-speed electron
+                    </div>
+                    <div class="label" style="right: 20%; top: 60%;">
+                        Deflected electron<br>(lower energy)
+                    </div>
+                    <div class="label" style="left: 50%; top: 10%; transform: translateX(-50%);">
+                        X-ray photons<br>(Bremsstrahlung)
+                    </div>
+                    <div class="label" style="left: 50%; bottom: 40%; transform: translateX(-50%);">
+                        Atomic nucleus
+                    </div>
+
+                    <div class="energy-indicator">
+                        Energy lost = <span class="energy-value">X-ray energy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 3: Characteristic X-rays -->
+            <div class="scene" id="scene-characteristic">
+                <div class="characteristic-scene">
+                    <div class="atom">
+                        <div class="atom-nucleus"></div>
+                        <div class="shell k-shell">
+                            <div class="shell-electron knockout"></div>
+                        </div>
+                        <div class="shell l-shell">
+                            <div class="shell-electron transition"></div>
+                        </div>
+                        <div class="shell m-shell">
+                            <div class="shell-electron"></div>
+                        </div>
+                    </div>
+
+                    <div class="characteristic-photon animated"></div>
+
+                    <div class="label" style="left: 50%; top: 5%; transform: translateX(-50%);">
+                        Inner shell electron ejected
+                    </div>
+                    <div class="label" style="right: 10%; top: 30%;">
+                        Outer electron<br>fills vacancy
+                    </div>
+                    <div class="label" style="left: 15%; bottom: 30%;">
+                        Characteristic X-ray<br>(specific energy)
+                    </div>
+
+                    <div class="energy-indicator">
+                        Energy = <span class="energy-value">Binding energy difference</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 4: Photoelectric Effect -->
+            <div class="scene" id="scene-photoelectric">
+                <div class="photoelectric-scene">
+                    <div class="target-atom">
+                        <div class="target-nucleus"></div>
+                        <div class="target-shell">
+                            <div class="bound-electron ejected"></div>
+                            <div class="bound-electron" style="left: 90%; top: 50%; transform: translateY(-50%);"></div>
+                        </div>
+                    </div>
+
+                    <div class="incoming-photon animated"></div>
+
+                    <div class="label" style="left: 15%; top: 40%;">
+                        Incoming X-ray<br>photon
+                    </div>
+                    <div class="label" style="right: 10%; top: 25%;">
+                        Ejected<br>photoelectron
+                    </div>
+                    <div class="label" style="left: 50%; bottom: 25%; transform: translateX(-50%);">
+                        Photon completely absorbed
+                    </div>
+
+                    <div class="energy-indicator">
+                        E<sub>photon</sub> = <span class="energy-value">E<sub>binding</sub> + E<sub>kinetic</sub></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 5: Compton Scattering -->
+            <div class="scene" id="scene-compton">
+                <div class="compton-scene">
+                    <div class="free-electron recoil"></div>
+                    <div class="compton-photon-in animated"></div>
+                    <div class="compton-photon-out animated"></div>
+
+                    <div class="label" style="left: 15%; top: 40%;">
+                        High-energy X-ray<br>(shorter wavelength)
+                    </div>
+                    <div class="label" style="right: 10%; top: 25%;">
+                        Scattered photon<br>(longer wavelength,<br>lower energy)
+                    </div>
+                    <div class="label" style="left: 50%; bottom: 35%; transform: translateX(-50%);">
+                        Outer shell electron
+                    </div>
+                    <div class="label" style="right: 20%; bottom: 20%;">
+                        Recoil electron<br>(gains kinetic energy)
+                    </div>
+
+                    <div class="energy-indicator">
+                        E<sub>in</sub> = <span class="energy-value">E<sub>scattered</sub> + E<sub>electron</sub></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" id="info-box">
+            <!-- Info content will be dynamically updated -->
+        </div>
+    </div>
+
+    <script>
+        const infoContent = {
+            tube: {
+                title: "X-ray Tube Operation",
+                content: `
+                    <p><strong>How X-rays are Generated:</strong></p>
+                    <ul>
+                        <li><strong>Cathode:</strong> Heated filament emits electrons through thermionic emission</li>
+                        <li><strong>Acceleration:</strong> High voltage (50-150 kV) accelerates electrons toward the anode</li>
+                        <li><strong>Anode:</strong> Tungsten target where electrons collide at high speed</li>
+                        <li><strong>X-ray Production:</strong> ~1% of electron energy converts to X-rays, 99% becomes heat</li>
+                        <li><strong>Spectrum:</strong> Produces continuous (Bremsstrahlung) and characteristic X-rays</li>
+                    </ul>
+                `
+            },
+            bremsstrahlung: {
+                title: "Bremsstrahlung (Braking Radiation)",
+                content: `
+                    <p><strong>Continuous X-ray Spectrum:</strong></p>
+                    <ul>
+                        <li><strong>Mechanism:</strong> High-speed electron passes near atomic nucleus</li>
+                        <li><strong>Deflection:</strong> Strong electric field of nucleus deflects electron</li>
+                        <li><strong>Energy Loss:</strong> Kinetic energy lost appears as X-ray photon</li>
+                        <li><strong>Variable Energy:</strong> Produces X-rays of many different energies (continuous spectrum)</li>
+                        <li><strong>Efficiency:</strong> Main source of X-rays in medical imaging (~80% of X-ray output)</li>
+                        <li><strong>Max Energy:</strong> Limited by electron kinetic energy (E<sub>max</sub> = eV)</li>
+                    </ul>
+                `
+            },
+            characteristic: {
+                title: "Characteristic X-ray Emission",
+                content: `
+                    <p><strong>Discrete X-ray Spectrum:</strong></p>
+                    <ul>
+                        <li><strong>Step 1:</strong> High-energy electron knocks out inner shell electron (usually K-shell)</li>
+                        <li><strong>Step 2:</strong> Outer shell electron fills the vacancy</li>
+                        <li><strong>Step 3:</strong> Energy difference emitted as X-ray photon</li>
+                        <li><strong>Specific Energies:</strong> Creates sharp peaks at characteristic energies (K<sub>α</sub>, K<sub>β</sub>, etc.)</li>
+                        <li><strong>Material Dependent:</strong> Energy depends on target material's binding energies</li>
+                        <li><strong>Example:</strong> Tungsten K<sub>α</sub> = 59.3 keV, K<sub>β</sub> = 67.2 keV</li>
+                    </ul>
+                `
+            },
+            photoelectric: {
+                title: "Photoelectric Effect",
+                content: `
+                    <p><strong>Complete Photon Absorption:</strong></p>
+                    <ul>
+                        <li><strong>Process:</strong> X-ray photon transfers all energy to inner shell electron</li>
+                        <li><strong>Result:</strong> Electron ejected from atom (photoelectron), photon disappears</li>
+                        <li><strong>Energy:</strong> E<sub>photon</sub> = E<sub>binding</sub> + E<sub>kinetic</sub></li>
+                        <li><strong>Probability:</strong> Increases with material atomic number (∝ Z³-Z⁵)</li>
+                        <li><strong>Energy Dependence:</strong> Dominant at lower X-ray energies (<30 keV)</li>
+                        <li><strong>Medical Imaging:</strong> Provides high contrast (bone vs. soft tissue)</li>
+                        <li><strong>Secondary:</strong> Vacancy filled by outer electron → characteristic X-ray or Auger electron</li>
+                    </ul>
+                `
+            },
+            compton: {
+                title: "Compton Scattering",
+                content: `
+                    <p><strong>Partial Energy Transfer:</strong></p>
+                    <ul>
+                        <li><strong>Process:</strong> X-ray photon collides with outer shell electron</li>
+                        <li><strong>Result:</strong> Photon scattered at angle with reduced energy (longer wavelength)</li>
+                        <li><strong>Electron:</strong> Recoils with kinetic energy</li>
+                        <li><strong>Conservation:</strong> Total energy and momentum conserved</li>
+                        <li><strong>Energy Range:</strong> Dominant interaction at 30-100 keV (medical range)</li>
+                        <li><strong>Scatter:</strong> Creates unwanted fog in medical images</li>
+                        <li><strong>Formula:</strong> λ' - λ = (h/m<sub>e</sub>c)(1 - cos θ)</li>
+                    </ul>
+                `
+            }
+        };
+
+        function showScene(sceneName) {
+            // Hide all scenes
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+
+            // Show selected scene
+            document.getElementById('scene-' + sceneName).classList.add('active');
+
+            // Update button states
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update info box
+            updateInfo(sceneName);
+        }
+
+        function updateInfo(sceneName) {
+            const info = infoContent[sceneName];
+            document.getElementById('info-box').innerHTML = `
+                <h3>${info.title}</h3>
+                ${info.content}
+            `;
+        }
+
+        // Initialize with first scene info
+        updateInfo('tube');
+    </script>
+</body>
+</html>
