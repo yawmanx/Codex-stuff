@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbis – Behandlungspfad Akute Divertikulitis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.25);
+        }
+        .badge {
+            @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+        }
+        .section-card {
+            background: white;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(79, 70, 229, 0.08);
+            box-shadow: 0 18px 40px -24px rgba(79, 70, 229, 0.35);
+        }
+        .step-card {
+            border-radius: 1rem;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px -24px rgba(15, 23, 42, 0.45);
+        }
+        .status-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 999px;
+        }
+        .timeline::before {
+            content: "";
+            position: absolute;
+            top: 1rem;
+            bottom: 1rem;
+            left: 1.3rem;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(129, 140, 248, 0.15) 0%, rgba(79, 70, 229, 0.35) 100%);
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 3.5rem;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            background: white;
+            border: 2px solid rgba(79, 70, 229, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-icon svg {
+            width: 0.9rem;
+            height: 0.9rem;
+        }
+        .grid-auto-fill {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10 space-y-8">
+        <header class="bg-white/70 backdrop-blur-xl border border-indigo-100 rounded-3xl p-8 shadow-xl shadow-indigo-100/40">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2">
+                    <p class="uppercase tracking-[0.35em] text-xs font-semibold text-indigo-400">Asklepios · Digitale SOP</p>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Orbis Behandlungspfad – Akute Divertikulitis (konservativ)</h1>
+                    <p class="text-slate-600 max-w-3xl">Interaktive Abbildung des konzernweiten Behandlungspfads für die stationäre Versorgung der akuten Divertikulitis. Der Ablauf folgt den SOP-Schritten mit Dokumentation, Anordnungen und KPI-Monitoring.</p>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-500 via-indigo-600 to-sky-500 text-white rounded-3xl px-6 py-5 shadow-lg shadow-indigo-400/50">
+                    <p class="text-xs uppercase tracking-widest text-indigo-100">Status</p>
+                    <p class="text-2xl font-semibold" id="progressText">0% abgeschlossen</p>
+                    <div class="mt-3 w-56 h-2 rounded-full bg-indigo-200/40 overflow-hidden">
+                        <div id="progressBar" class="h-full w-0 bg-white rounded-full transition-all duration-300"></div>
+                    </div>
+                    <p class="mt-3 text-sm text-indigo-100" id="progressDetail">0 von 0 Prozessschritten erledigt</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="grid lg:grid-cols-[1.2fr,1fr] gap-6">
+            <div class="section-card p-6 lg:p-7">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">Patient:in auswählen</h2>
+                        <p class="text-sm text-slate-500">Starten Sie den digitalen Behandlungspfad mit Patientendaten aus der Notaufnahme.</p>
+                    </div>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-600 px-4 py-1.5 text-xs font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 12c2.828 0 5.125-2.239 5.125-5S14.828 2 12 2 6.875 4.239 6.875 7 9.172 12 12 12Zm0 0c-4.004 0-7.25 3.246-7.25 7.25 0 .414.336.75.75.75h13c.414 0 .75-.336.75-.75 0-4.004-3.246-7.25-7.25-7.25Z"/></svg>
+                        Orbis Patientenakte
+                    </span>
+                </div>
+                <div class="mt-5 space-y-4">
+                    <select id="patientSelect" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                        <option value="">Bitte Patient:in wählen…</option>
+                    </select>
+                    <div id="patientCard" class="hidden border border-slate-100 rounded-2xl bg-gradient-to-br from-white via-indigo-50/40 to-white p-5"></div>
+                </div>
+            </div>
+
+            <div class="section-card p-6 lg:p-7">
+                <h2 class="text-lg font-semibold text-slate-900">Verdachtsdiagnose festlegen</h2>
+                <p class="text-sm text-slate-500">Die Auswahl aktiviert die entsprechenden SOP-Module. Weitere Diagnosen folgen sukzessive.</p>
+                <div id="diagnosisOptions" class="mt-5 grid gap-3"></div>
+            </div>
+        </section>
+
+        <section class="section-card p-6 lg:p-8 space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-slate-900">SOP Flow – Akute Divertikulitis</h2>
+                    <p class="text-sm text-slate-500" id="pathSubtitle">Bitte wählen Sie eine Patient:in und die Verdachtsdiagnose, um den Pfad zu starten.</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-indigo-600 bg-indigo-50/80 border border-indigo-100 rounded-full px-4 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0Z" />
+                    </svg>
+                    <span id="timelineInfo">Zeitleiste wird nach Aktivierung angezeigt.</span>
+                </div>
+            </div>
+            <div id="pathContent" class="space-y-6"></div>
+        </section>
+    </div>
+
+    <template id="placeholderDiagnosis">
+        <div class="border border-dashed border-slate-300 rounded-2xl p-6 text-center text-sm text-slate-500 bg-white/60">
+            <p>Das Modul für diese Diagnose befindet sich in Vorbereitung. Bitte wählen Sie aktuell <span class="font-semibold text-indigo-600">„Akute Divertikulitis“</span>, um den digitalen Behandlungspfad zu starten.</p>
+        </div>
+    </template>
+
+    <script>
+        const patients = [
+            {
+                id: 'p1',
+                name: 'Markus Feld',
+                birthDate: '1966-03-22',
+                age: 58,
+                sex: 'männlich',
+                insurance: 'AOK Plus',
+                allergies: 'Keine bekannten Allergien',
+                presentation: 'Neuaufnahme über die ZNA mit linksseitigen Unterbauchschmerzen seit 36 Stunden, subfebril, kein Ileus.',
+                vitals: 'RR 142/86 mmHg · HF 98/min · Temp 38.1 °C · SpO₂ 95 % RA',
+                riskFactors: ['Arterielle Hypertonie', 'Keine Immunsuppression', 'BMI 29 kg/m²'],
+                lastLabs: 'CRP 78 mg/l, Leukozyten 13.4/nl, Kreatinin 0.9 mg/dl',
+                priority: 'Neu in Behandlung'
+            },
+            {
+                id: 'p2',
+                name: 'Sarah Klein',
+                birthDate: '1981-09-11',
+                age: 43,
+                sex: 'weiblich',
+                insurance: 'Techniker Krankenkasse',
+                allergies: 'Penicillin (Exanthem)',
+                presentation: 'Bekannte rezidivierende Sigmadivertikulitis. Vorstellung wegen rezidivierender Schmerzen, kein Fieber.',
+                vitals: 'RR 128/74 mmHg · HF 82/min · Temp 37.4 °C · SpO₂ 98 % RA',
+                riskFactors: ['Voroperation Appendektomie 2004', 'Raucherin (5 PY)'],
+                lastLabs: 'CRP 43 mg/l, Leukozyten 10.2/nl, Kreatinin 0.7 mg/dl',
+                priority: 'Geplant / elektiv'
+            },
+            {
+                id: 'p3',
+                name: 'Johanna Ritter',
+                birthDate: '1952-12-02',
+                age: 71,
+                sex: 'weiblich',
+                insurance: 'Barmer',
+                allergies: 'NSAR (bronchospastisch)',
+                presentation: 'Pflegeheimbewohnerin, über Rettungsdienst mit Verdacht auf Sigmadivertikulitis (CDD 2b) eingewiesen.',
+                vitals: 'RR 118/62 mmHg · HF 104/min · Temp 38.5 °C · SpO₂ 93 % RA',
+                riskFactors: ['Diabetes mellitus Typ 2', 'Chronische Niereninsuffizienz G3a', 'Immunseneszenz'],
+                lastLabs: 'CRP 126 mg/l, Leukozyten 15.8/nl, GFR 54 ml/min/1.73 m²',
+                priority: 'High Risk'
+            }
+        ];
+
+        const diagnoses = [
+            {
+                id: 'acute-diverticulitis',
+                title: 'Akute Divertikulitis',
+                summary: 'CDD Typ 1-2 (komplexitätsarme Fälle) – konservatives Vorgehen gemäß SOP.',
+                active: true,
+                badge: 'SOP aktiviert'
+            },
+            {
+                id: 'acute-pancreatitis',
+                title: 'Akute Pankreatitis',
+                summary: 'Modul in Vorbereitung – bitte später erneut prüfen.',
+                active: false,
+                badge: 'bald verfügbar'
+            },
+            {
+                id: 'community-acquired-pneumonia',
+                title: 'Ambulant erworbene Pneumonie',
+                summary: 'Standardpfad folgt in der nächsten Ausbaustufe.',
+                active: false,
+                badge: 'bald verfügbar'
+            }
+        ];
+        const diverticulitisSections = [
+            {
+                id: 'initial-intake',
+                title: 'Aufnahme & Ersteinschätzung',
+                tone: 'from-indigo-500 via-indigo-600 to-sky-500',
+                icon: 'clipboard',
+                description: 'Ziel: rasche klinische Stabilisierung, Einstufung nach CDD und Dokumentation in Orbis.',
+                steps: [
+                    {
+                        id: 'triage',
+                        title: 'ZNA-Triage & Erste Untersuchung',
+                        description: 'MTS-Kategorie festlegen, Vitalparameter sichern, Schmerz- und Sepsisscreening dokumentieren.',
+                        checklist: [
+                            'Vitalparameter erfassen und in der elektronischen Kurve hinterlegen',
+                            'Schmerzscore (NRS) und Bauchbefund (peritoneal? Abwehrspannung?) dokumentieren',
+                            'Red Flags für komplizierte Divertikulitis (Peritonitis, Ileus, Instabilität) prüfen'
+                        ],
+                        timeline: 'innerhalb der ersten 30 Minuten',
+                        responsible: 'Aufnehmende/r Ärzt:in',
+                        focus: 'Stabilisierung & Dokumentation'
+                    },
+                    {
+                        id: 'anamnesis',
+                        title: 'Anamnese, Risikostratifikation & CDD-Klassifikation',
+                        description: 'Symptombeginn, Stuhlgewohnheiten, Vorerkrankungen, Immunsuppression und Komorbiditäten erfassen.',
+                        checklist: [
+                            'CDD Typ anhand Klinik und ggf. Bildgebung dokumentieren (1: unkompliziert, 2a: mikroabszess, 2b: Makroabszess)',
+                            'Komorbiditäten (Diabetes, Immunsuppression, CKD) und Medikation (z. B. Antikoagulation) prüfen',
+                            'Ausschluss anderer Differenzialdiagnosen (z. B. Appendizitis, Kolitis, Gynäkologie) festhalten'
+                        ],
+                        timeline: 'innerhalb der ersten Stunde',
+                        responsible: 'Aufnehmende/r Ärzt:in',
+                        focus: 'Diagnostische Einordnung'
+                    }
+                ]
+            },
+            {
+                id: 'diagnostics',
+                title: 'Diagnostik & Konsile',
+                tone: 'from-sky-500 via-cyan-500 to-emerald-500',
+                icon: 'labor',
+                description: 'Bildgebung und Labordiagnostik steuern das weitere Vorgehen.',
+                steps: [
+                    {
+                        id: 'labs-initial',
+                        title: 'Laboranordnung & Verlaufskontrolle',
+                        description: 'CRP, Blutbild, Kreatinin, Elektrolyte, Leberwerte sowie ggf. BGA veranlassen. Verlauf alle 24–48 h.',
+                        checklist: [
+                            'Initial: CRP, Leukozyten, Differenzialblutbild, Kreatinin, Elektrolyte, Leberwerte, Lipase',
+                            'Bei Risikofaktoren GFR und Medikamentenspiegel prüfen',
+                            'Verlaufswerte nach 24 h bzw. klinischem Bedarf nachfordern'
+                        ],
+                        timeline: 'innerhalb der ersten Stunde anordnen',
+                        responsible: 'ZNA / Stationsärzt:in',
+                        focus: 'Labor'
+                    },
+                    {
+                        id: 'imaging',
+                        title: 'Bildgebung des Abdomens',
+                        description: 'Sonografie (1. Wahl). Bei unklarem Befund oder Komplikationsverdacht CT Abdomen mit KM in der Portalvenenphase.',
+                        checklist: [
+                            'Sonografie Abdomen (inkl. Darmwand, freie Flüssigkeit, Abszess-Suche)',
+                            'Indikation für CT Abdomen (KM) bei CDD 2b, Perforationsverdacht oder unsicherer Diagnose',
+                            'CT-Befund in Orbis einpflegen und dem Team kommunizieren'
+                        ],
+                        timeline: 'innerhalb von 6 Stunden nach Aufnahme',
+                        responsible: 'Radiologie / Stationsärzt:in',
+                        focus: 'Bildgebung'
+                    },
+                    {
+                        id: 'surgical-consult',
+                        title: 'Chirurgisches Konsil',
+                        description: 'Bei CDD 2b, ausgedehntem Abszess oder fehlendem Ansprechen nach 48 h chirurgische Mitbeurteilung organisieren.',
+                        checklist: [
+                            'Fragestellung klar formulieren (Drainage? OP-Indikation?)',
+                            'Vorbefunde und Bildgebung übermitteln',
+                            'Rückmeldung dokumentieren und in den Therapieplan integrieren'
+                        ],
+                        timeline: 'bis spätestens 12 h nach Bildgebung',
+                        responsible: 'Stationsärzt:in',
+                        focus: 'Interdisziplinär'
+                    }
+                ]
+            },
+            {
+                id: 'therapy',
+                title: 'Therapie & Anordnungen',
+                tone: 'from-emerald-500 via-teal-500 to-cyan-500',
+                icon: 'treatment',
+                description: 'Analgesie, Antibiotika und supportive Maßnahmen strukturieren.',
+                steps: [
+                    {
+                        id: 'analgesia',
+                        title: 'Analgetische Therapie nach Standard',
+                        description: 'Schmerztherapie stufenweise eskalieren und Spasmolyse bei kolikartigen Schmerzen anbieten.',
+                        checklist: [
+                            'Metamizol 500–1.000 mg p.o./i.v. alle 4–6 h (max. 4 g/24 h) oder langsam i.v. bei Bedarf',
+                            'Paracetamol 1 g p.o./i.v. alle 6 h kombinieren (max. 4 g/24 h)',
+                            'Bei Kolik: Butylscopolamin 20 mg i.v. (fraktioniert), ggf. Dimenhydrinat bei Übelkeit',
+                            'Bei NSAR-Unverträglichkeit Alternativen beachten'
+                        ],
+                        timeline: 'sofort nach Aufnahme',
+                        responsible: 'Stationsärzt:in / Pflege',
+                        focus: 'Analgesie'
+                    },
+                    {
+                        id: 'antibiotics',
+                        title: 'Antibiotikatherapie (konservativ)',
+                        description: 'Standardtherapie bei CDD 1–2a: Amoxicillin/Clavulansäure plus Metronidazol. Bei Allergien Alternativen wählen.',
+                        checklist: [
+                            'Amoxicillin/Clavulansäure 1.2 g i.v. alle 8 h + Metronidazol 500 mg i.v. alle 8 h (Therapiedauer 5–7 Tage)',
+                            'Bei Penicillinallergie: Ciprofloxacin 400 mg i.v. alle 12 h + Metronidazol 500 mg i.v. alle 8 h',
+                            'GFR < 60 ml/min: Dosisanpassung dokumentieren',
+                            'Antibiogramm bei Kulturen berücksichtigen'
+                        ],
+                        timeline: 'innerhalb der ersten Stunde nach Diagnosesicherung',
+                        responsible: 'Stationsärzt:in',
+                        focus: 'Antiinfektiva'
+                    },
+                    {
+                        id: 'nutrition',
+                        title: 'Kostform & Flüssigkeit',
+                        description: 'Initial Nahrungskarenz oder leichte Kost je nach klinischer Situation. Ausreichend Flüssigkeit sicherstellen.',
+                        checklist: [
+                            'Initial flüssige Kost / klare Flüssigkeiten bei Übelkeit oder Schmerzen',
+                            'Tagesbilanz, Elektrolyte und Volumentherapie dokumentieren',
+                            'Schrittweise Kostaufbau nach Schmerzfreiheit und Normalisierung der Entzündungswerte'
+                        ],
+                        timeline: 'innerhalb der ersten 6 Stunden festlegen',
+                        responsible: 'Stationsärzt:in / Pflege',
+                        focus: 'Ernährung'
+                    },
+                    {
+                        id: 'admission',
+                        title: 'Stationsaufnahme & Pflegetriage',
+                        description: 'Aufnahmestation, Monitoringintensität und Pflegeziele nach Risiko (CDD, Alter, Komorbiditäten) festlegen.',
+                        checklist: [
+                            'Station (Normalstation, Überwachungsstation) mit Pflegeleitung abstimmen',
+                            'Monitoringparameter (Vitalzeichen, Schmerz, Bilanz) in der Kurve hinterlegen',
+                            'Sturz-, Dekubitus- und Sepsis-Screening dokumentieren'
+                        ],
+                        timeline: 'direkt nach Diagnosesicherung',
+                        responsible: 'Aufnahmepflege / Stationsleitung',
+                        focus: 'Prozessorganisation'
+                    }
+                ]
+            },
+            {
+                id: 'monitoring',
+                title: 'Monitoring & KPI-Tracking',
+                tone: 'from-indigo-600 via-purple-500 to-fuchsia-500',
+                icon: 'monitoring',
+                description: 'Klinische und laborchemische Verlaufskontrolle zur Evaluation des Therapieansprechens.',
+                steps: [
+                    {
+                        id: 'daily-rounds',
+                        title: 'Tägliche Visite & Reevaluation',
+                        description: 'Symptomverlauf, Abdomenbefund, Vitalparameter und Schmerzscore strukturiert dokumentieren.',
+                        checklist: [
+                            'Visite ≥ 1x/Tag mit Fokus auf Abdominalstatus, Temperatur, Kreislauf',
+                            'Abweichungen / Verschlechterungen zeitnah im Team kommunizieren',
+                            'Entscheidung über Fortführung der konservativen Therapie treffen'
+                        ],
+                        timeline: 'mindestens 1x täglich',
+                        responsible: 'Stationsärzt:in',
+                        focus: 'Klinischer Verlauf'
+                    },
+                    {
+                        id: 'lab-followup',
+                        title: 'Laborverlauf (CRP, Leukozyten)',
+                        description: 'Alle 24–48 h Kontrollen; bei Verschlechterung frühzeitige Eskalation planen.',
+                        checklist: [
+                            'CRP- und Leukozyten-Trend dokumentieren',
+                            'Nierenfunktion (Kreatinin/GFR) bei Antibiotikatherapie überwachen',
+                            'Bei Verschlechterung: erneute Bildgebung / Konsil erwägen'
+                        ],
+                        timeline: 'alle 24–48 h',
+                        responsible: 'Stationsärzt:in / Labor',
+                        focus: 'Labortracking'
+                    },
+                    {
+                        id: 'triage-review',
+                        title: 'CDD-Triage & Entscheidungsmeeting',
+                        description: 'Spätestens nach 48 h: Response bewerten, ggf. Eskalation (Drainage, OP) entscheiden.',
+                        checklist: [
+                            'Ansprechen auf Antibiotika (Schmerz, Temperatur, Labor) dokumentieren',
+                            'Bei fehlendem Ansprechen: chirurgisches Konsil aktualisieren',
+                            'Entscheidung im Teammeeting festhalten'
+                        ],
+                        timeline: 'nach 48 h bzw. bei Bedarf früher',
+                        responsible: 'Interdisziplinäres Team',
+                        focus: 'Entscheidung'
+                    },
+                    {
+                        id: 'kpi',
+                        title: 'KPIs & Qualitätsindikatoren',
+                        description: 'Labor, Antibiotikatherapie, Abdomen-Scores und CDD-Dokumentation laut Konzernvorgabe erfassen.',
+                        checklist: [
+                            'Labor-KPI: CRP, Blutbild, Nierenwerte täglich dokumentiert?',
+                            'Antibiotikatherapie: Beginn, Substanz, Dosis, Therapiedauer dokumentiert?',
+                            'Abdomen-Score / Schmerzskala mindestens 1x/Tag erfasst?',
+                            'CDD-Typ in Arztbrief und Kurve vermerkt?'
+                        ],
+                        timeline: 'kontinuierlich',
+                        responsible: 'Stationsärzt:in / Pflege',
+                        focus: 'Qualität'
+                    }
+                ]
+            },
+            {
+                id: 'discharge',
+                title: 'Entlassung & Nachsorge',
+                tone: 'from-purple-500 via-indigo-500 to-sky-500',
+                icon: 'discharge',
+                description: 'Therapieabschluss, Patient:inneninformation und ambulante Weiterbetreuung sicherstellen.',
+                steps: [
+                    {
+                        id: 'deescalation',
+                        title: 'Therapie-Deeskalation',
+                        description: 'Antibiotika absetzen, sobald klinische Stabilität besteht und CRP rückläufig ist.',
+                        checklist: [
+                            'Absetzen / orale Fortführung nach 5–7 Tagen abwägen',
+                            'Spasmolytika und Analgetika bedarfsgerecht reduzieren',
+                            'Ernährungsaufbau dokumentieren'
+                        ],
+                        timeline: 'vor Entlassung',
+                        responsible: 'Stationsärzt:in',
+                        focus: 'Therapieabschluss'
+                    },
+                    {
+                        id: 'discharge-letter',
+                        title: 'Entlassung & Arztbrief',
+                        description: 'Arztbrief mit CDD-Klassifikation, Verlauf, Bildgebung, Therapie und KPIs erstellen.',
+                        checklist: [
+                            'Aufnahme-/Entlassdaten, Diagnosen, OPS/Prozeduren dokumentieren',
+                            'Antibiotikaregime und Dauer inkl. Dosisangaben aufführen',
+                            'Empfohlene Nachkontrollen (Hausarzt, Gastroenterologie) festhalten',
+                            'Patient:inneninformation zur Rezidivprophylaxe (Ballaststoffe, Bewegung) hinzufügen'
+                        ],
+                        timeline: 'spätestens am Entlasstag',
+                        responsible: 'Stationsärzt:in',
+                        focus: 'Dokumentation'
+                    },
+                    {
+                        id: 'aftercare',
+                        title: 'Nachsorge & Aufklärung',
+                        description: 'Ambulante Kontrolle und Koloskopie nach ca. 6 Wochen organisieren.',
+                        checklist: [
+                            'Termin beim Hausarzt / Gastroenterologie vereinbaren',
+                            'Kolonskopie zur Rezidiv- und Tumorausschlusskontrolle planen',
+                            'Patient:in zu Warnsymptomen und Ernährungsumstellung beraten'
+                        ],
+                        timeline: 'innerhalb von 7 Tagen nach Entlassung anstoßen',
+                        responsible: 'Stationsärzt:in / Pflege',
+                        focus: 'Nachsorge'
+                    }
+                ]
+            }
+        ];
+
+        const totalSteps = diverticulitisSections.reduce((count, section) => count + section.steps.length, 0);
+
+        const state = {
+            patientId: null,
+            diagnosisId: null,
+            steps: {},
+            communication: []
+        };
+        const svgIcons = {
+            clipboard: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5V4a2 2 0 012-2h2a2 2 0 012 2v.5a.5.5 0 01-.5.5h-5a.5.5 0 01-.5-.5Zm-4.5 0A1.5 1.5 0 016 3h1.5v1a1 1 0 001 1h7a1 1 0 001-1V3H18a1.5 1.5 0 011.5 1.5v15A1.5 1.5 0 0118 21h-3.75a.75.75 0 01-.53-.22l-.5-.5a.75.75 0 00-.53-.22h-1.38a.75.75 0 00-.53.22l-.5.5a.75.75 0 01-.53.22H6A1.5 1.5 0 014.5 19.5v-15Z" /></svg>',
+            labor: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 3.5a1 1 0 011-1h2a1 1 0 011 1V8l4.05 7.29a3 3 0 01-2.61 4.46H7.56a3 3 0 01-2.62-4.46L9 8V3.5Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6" /></svg>',
+            treatment: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0Z" /></svg>',
+            monitoring: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5 6.5 9l3 3 4.5-6 3 4.5h4" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 9v12H3V3h12" /></svg>',
+            discharge: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0-3-3m3 3 3-3M7.5 7h-2A1.5 1.5 0 004 8.5v11A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5v-11A1.5 1.5 0 0018.5 7h-2" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 7h-6V4.5A1.5 1.5 0 0110.5 3h3A1.5 1.5 0 0115 4.5V7Z" /></svg>'
+        };
+
+        function formatDate(iso) {
+            const date = new Date(iso);
+            return date.toLocaleDateString('de-DE');
+        }
+
+        function renderPatientOptions() {
+            const select = document.getElementById('patientSelect');
+            patients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.id;
+                option.textContent = `${patient.name} · ${patient.age} Jahre`;
+                select.appendChild(option);
+            });
+        }
+
+        function renderPatientCard() {
+            const container = document.getElementById('patientCard');
+            if (!state.patientId) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+            const patient = patients.find(p => p.id === state.patientId);
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-xl font-semibold text-slate-900">${patient.name}</h3>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 text-indigo-600 px-3 py-1 text-xs font-semibold">${patient.priority}</span>
+                            </div>
+                            <p class="text-sm text-slate-500">Geburtsdatum ${formatDate(patient.birthDate)} · ${patient.sex}</p>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4 text-sm text-slate-600">
+                            <div class="space-y-1">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Versicherung</p>
+                                <p class="font-medium text-slate-700">${patient.insurance}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Allergien</p>
+                                <p class="font-medium text-slate-700">${patient.allergies}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Leitsymptome</p>
+                                <p>${patient.presentation}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Vitalparameter</p>
+                                <p>${patient.vitals}</p>
+                            </div>
+                            <div class="space-y-1 sm:col-span-2">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Komorbiditäten / Risikofaktoren</p>
+                                <p>${patient.riskFactors.join(' · ')}</p>
+                            </div>
+                            <div class="space-y-1 sm:col-span-2">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Labor zuletzt</p>
+                                <p>${patient.lastLabs}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white/70 border border-slate-100 rounded-2xl p-4 shadow-sm">
+                        <p class="text-xs uppercase tracking-widest text-slate-400">Nächste Schritte</p>
+                        <ul class="mt-2 text-sm text-slate-600 space-y-2 list-disc list-inside">
+                            <li>Verdachtsdiagnose auswählen</li>
+                            <li>Initiale SOP-Schritte dokumentieren</li>
+                            <li>Kommunikation & Termine planen</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDiagnosisOptions() {
+            const container = document.getElementById('diagnosisOptions');
+            container.innerHTML = '';
+            diagnoses.forEach(diagnosis => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `text-left w-full rounded-2xl border ${diagnosis.active ? 'border-indigo-200 hover:border-indigo-400 hover:shadow-lg' : 'border-dashed border-slate-300 cursor-not-allowed'} bg-white px-5 py-4 transition duration-200`;
+                button.dataset.diagnosisId = diagnosis.id;
+                if (!diagnosis.active) {
+                    button.disabled = true;
+                }
+                button.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="font-semibold text-slate-900">${diagnosis.title}</p>
+                            <p class="text-sm text-slate-500">${diagnosis.summary}</p>
+                        </div>
+                        <span class="inline-flex items-center gap-1 rounded-full ${diagnosis.active ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'} px-3 py-1 text-[11px] font-semibold uppercase tracking-widest">${diagnosis.badge}</span>
+                    </div>
+                `;
+                container.appendChild(button);
+            });
+        }
+
+        function renderDiverticulitisPath() {
+            const container = document.getElementById('pathContent');
+            const subtitle = document.getElementById('pathSubtitle');
+            const timelineInfo = document.getElementById('timelineInfo');
+
+            if (state.diagnosisId !== 'acute-diverticulitis') {
+                container.innerHTML = document.getElementById('placeholderDiagnosis').innerHTML;
+                subtitle.textContent = 'Wählen Sie Patient:in und Verdachtsdiagnose, um den Behandlungspfad zu aktivieren.';
+                timelineInfo.textContent = 'Zeitleiste wird nach Aktivierung angezeigt.';
+                updateProgressUI();
+                return;
+            }
+
+            subtitle.textContent = 'Der Pfad ist aktiv. Dokumentieren Sie jeden Schritt und überwachen Sie KPIs nach SOP.';
+            timelineInfo.textContent = 'Zeitleiste mit allen SOP-Schritten. Status kann pro Schritt dokumentiert werden.';
+
+            const sectionsHTML = diverticulitisSections.map(section => {
+                const stepsHTML = section.steps.map(step => {
+                    const stepState = state.steps[step.id] || {};
+                    const status = stepState.status || 'offen';
+                    const due = stepState.due || '';
+                    const note = stepState.note || '';
+                    const tasks = stepState.tasks || [];
+                    const statusColors = {
+                        'offen': 'bg-slate-100 text-slate-500',
+                        'in_arbeit': 'bg-amber-100 text-amber-600',
+                        'abgeschlossen': 'bg-emerald-100 text-emerald-600'
+                    };
+                    return `
+                        <div class="step-card bg-white p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-semibold uppercase tracking-widest text-slate-400">${step.focus}</p>
+                                    <h3 class="text-lg font-semibold text-slate-900">${step.title}</h3>
+                                </div>
+                                <div class="flex flex-col items-end gap-2">
+                                    <select class="step-status rounded-full px-3 py-2 text-xs font-semibold ${statusColors[status]}" data-step-id="${step.id}">
+                                        <option value="offen" ${status === 'offen' ? 'selected' : ''}>Offen</option>
+                                        <option value="in_arbeit" ${status === 'in_arbeit' ? 'selected' : ''}>In Arbeit</option>
+                                        <option value="abgeschlossen" ${status === 'abgeschlossen' ? 'selected' : ''}>Abgeschlossen</option>
+                                    </select>
+                                    <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0Z" /></svg>
+                                        ${step.timeline}
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed">${step.description}</p>
+                            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                <p class="text-xs uppercase tracking-widest text-slate-400">Checkliste</p>
+                                <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                                    ${step.checklist.map((item, index) => {
+                                        const checked = tasks.includes(String(index));
+                                        return `<li class="flex items-start gap-3"><label class="flex items-start gap-3 cursor-pointer"><input type="checkbox" class="task-checkbox mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" data-step-id="${step.id}" data-task-index="${index}" ${checked ? 'checked' : ''}><span>${item}</span></label></li>`;
+                                    }).join('')}
+                                </ul>
+                            </div>
+                            <div class="grid sm:grid-cols-2 gap-4 text-sm">
+                                <label class="flex flex-col gap-1 text-slate-600">
+                                    <span class="text-xs uppercase tracking-widest text-slate-400">Fälligkeitszeitpunkt</span>
+                                    <input type="datetime-local" value="${due}" data-step-id="${step.id}" class="step-due rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                                </label>
+                                <div class="flex flex-col gap-1 text-slate-600">
+                                    <span class="text-xs uppercase tracking-widest text-slate-400">Verantwortlich</span>
+                                    <p class="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50">${step.responsible}</p>
+                                </div>
+                                <label class="sm:col-span-2 flex flex-col gap-1 text-slate-600">
+                                    <span class="text-xs uppercase tracking-widest text-slate-400">Notizen / Dokumentation</span>
+                                    <textarea rows="3" data-step-id="${step.id}" class="step-note rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">${note}</textarea>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <section class="rounded-3xl border border-indigo-100 bg-gradient-to-br ${section.tone} text-white/90">
+                        <div class="p-6 sm:p-8">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest">
+                                        <span class="bg-white/20 rounded-full p-2 text-white">
+                                            ${svgIcons[section.icon] || ''}
+                                        </span>
+                                        <span>${section.title}</span>
+                                    </div>
+                                    <p class="text-sm text-white/80 max-w-3xl">${section.description}</p>
+                                </div>
+                                <div class="bg-white/15 border border-white/20 rounded-2xl px-4 py-3 text-xs text-white/80">
+                                    ${section.steps.length} Schritte · strukturiertes Modul
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white text-slate-800 rounded-3xl rounded-t-none p-6 space-y-5">
+                            ${stepsHTML}
+                        </div>
+                    </section>
+                `;
+            }).join('');
+
+            const worklist = renderWorklistHTML();
+            const communication = renderCommunicationHTML();
+            const resources = renderResourceHTML();
+
+            container.innerHTML = `
+                <div class="grid xl:grid-cols-[2fr,1fr] gap-6">
+                    <div class="space-y-6">
+                        ${sectionsHTML}
+                    </div>
+                    <aside class="space-y-6">
+                        <section class="border border-slate-200 rounded-3xl bg-white p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Worklist</p>
+                                    <h3 class="text-lg font-semibold text-slate-900">Aufgaben & Deadlines</h3>
+                                </div>
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-600 px-3 py-1 text-xs font-semibold">${getCompletedCount()} / ${totalSteps} erledigt</span>
+                            </div>
+                            <div id="worklist" class="space-y-3 text-sm text-slate-600">
+                                ${worklist}
+                            </div>
+                        </section>
+                        <section class="border border-slate-200 rounded-3xl bg-white p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Kommunikation</p>
+                                    <h3 class="text-lg font-semibold text-slate-900">Nachrichten & Konsile</h3>
+                                </div>
+                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-600 px-3 py-1 text-xs font-semibold">${state.communication.length} geplant</span>
+                            </div>
+                            <form id="communicationForm" class="space-y-3 text-sm text-slate-600">
+                                <div class="grid grid-cols-1 gap-3">
+                                    <label class="flex flex-col gap-1">
+                                        <span class="text-xs uppercase tracking-widest text-slate-400">Adressat</span>
+                                        <select name="recipient" class="rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                            <option value="Radiologie">Radiologie</option>
+                                            <option value="Labor">Labor</option>
+                                            <option value="Chirurgie">Chirurgie</option>
+                                            <option value="Pflegeleitung">Pflegeleitung</option>
+                                            <option value="Hausarzt">Hausarzt</option>
+                                        </select>
+                                    </label>
+                                    <label class="flex flex-col gap-1">
+                                        <span class="text-xs uppercase tracking-widest text-slate-400">Betreff / Auftrag</span>
+                                        <input type="text" name="subject" required placeholder="z. B. CT-Abdomen anfordern" class="rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                                    </label>
+                                    <label class="flex flex-col gap-1">
+                                        <span class="text-xs uppercase tracking-widest text-slate-400">Fälligkeit</span>
+                                        <input type="datetime-local" name="due" class="rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                                    </label>
+                                    <label class="flex flex-col gap-1">
+                                        <span class="text-xs uppercase tracking-widest text-slate-400">Notiz</span>
+                                        <textarea rows="2" name="note" class="rounded-xl border border-slate-200 px-3 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" placeholder="Relevante Zusatzinfos"></textarea>
+                                    </label>
+                                </div>
+                                <button type="submit" class="w-full rounded-xl bg-indigo-600 text-white py-2.5 font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition">Aufgabe anlegen</button>
+                            </form>
+                            <div id="communicationList" class="space-y-3 text-sm text-slate-600">
+                                ${communication}
+                            </div>
+                        </section>
+                        ${resources}
+                    </aside>
+                </div>
+            `;
+
+            updateProgressUI();
+        }
+
+        function getCompletedCount() {
+            return Object.values(state.steps).filter(step => step.status === 'abgeschlossen').length;
+        }
+
+        function getOpenTasks() {
+            const tasks = [];
+            diverticulitisSections.forEach(section => {
+                section.steps.forEach(step => {
+                    const stepState = state.steps[step.id];
+                    const status = stepState?.status || 'offen';
+                    if (status !== 'abgeschlossen') {
+                        tasks.push({
+                            id: step.id,
+                            title: step.title,
+                            section: section.title,
+                            due: stepState?.due || '',
+                            status
+                        });
+                    }
+                });
+            });
+            return tasks;
+        }
+
+        function renderWorklistHTML() {
+            const tasks = getOpenTasks();
+            if (!tasks.length) {
+                return '<div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">Alle Schritte erledigt – bitte Monitoring fortsetzen.</div>';
+            }
+            return tasks.map(task => {
+                const statusLabels = {
+                    offen: 'Offen',
+                    in_arbeit: 'In Arbeit',
+                    abgeschlossen: 'Abgeschlossen'
+                };
+                const badgeClass = task.status === 'in_arbeit'
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-slate-100 text-slate-500';
+                return `
+                    <div class="rounded-2xl border border-slate-200 px-4 py-3 bg-white">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">${task.title}</p>
+                                <p class="text-xs text-slate-500">${task.section}</p>
+                            </div>
+                            <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold ${badgeClass}">${statusLabels[task.status]}</span>
+                        </div>
+                        ${task.due ? `<p class="mt-2 text-xs text-slate-500">Fällig bis: ${new Date(task.due).toLocaleString('de-DE')}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCommunicationHTML() {
+            if (!state.communication.length) {
+                return '<div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">Noch keine Kommunikationsaufträge erfasst.</div>';
+            }
+            return state.communication.map(entry => `
+                <div class="rounded-2xl border border-slate-200 px-4 py-3 bg-white">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">${entry.subject}</p>
+                            <p class="text-xs text-slate-500">${entry.recipient}</p>
+                        </div>
+                        ${entry.due ? `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-600 px-3 py-1 text-[11px] font-semibold">${new Date(entry.due).toLocaleString('de-DE')}</span>` : ''}
+                    </div>
+                    ${entry.note ? `<p class="mt-2 text-sm text-slate-600">${entry.note}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderResourceHTML() {
+            return `
+                <section class="border border-slate-200 rounded-3xl bg-white p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400">Standards</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Therapie-Bausteine</h3>
+                        </div>
+                        <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 text-slate-500 px-3 py-1 text-xs font-semibold">SOP Referenz</span>
+                    </div>
+                    <div class="space-y-4 text-sm text-slate-600">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400">Analgesie</p>
+                            <ul class="mt-2 space-y-1 list-disc list-inside">
+                                <li>Metamizol (500–1.000 mg p.o./i.v. alle 4–6 h, max. 4 g/Tag)</li>
+                                <li>Paracetamol (1 g p.o./i.v. alle 6 h, max. 4 g/Tag)</li>
+                                <li>Bei Kolik: Butylscopolamin 20 mg i.v. fraktioniert</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400">Antibiotika</p>
+                            <ul class="mt-2 space-y-1 list-disc list-inside">
+                                <li>Standard: Amoxicillin/Clavulansäure 1.2 g i.v. q8h + Metronidazol 500 mg i.v. q8h (5–7 Tage)</li>
+                                <li>Alternativ bei Allergie: Ciprofloxacin 400 mg i.v. q12h + Metronidazol 500 mg i.v. q8h</li>
+                                <li>Reserve: Ampicillin/Sulbactam oder Piperacillin/Tazobactam bei komplizierten Verläufen</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400">KPIs</p>
+                            <ul class="mt-2 space-y-1 list-disc list-inside">
+                                <li>Labor-Kontrollen dokumentiert?</li>
+                                <li>Antibiotikatherapie vollständig erfasst?</li>
+                                <li>Abdomen-Assessment (Schmerz, Abdomenstatus) täglich dokumentiert?</li>
+                                <li>CDD-Typ im Arztbrief ausgewiesen?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function updateProgressUI() {
+            const completed = getCompletedCount();
+            const percent = totalSteps ? Math.round((completed / totalSteps) * 100) : 0;
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            const progressDetail = document.getElementById('progressDetail');
+            if (progressText) {
+                progressText.textContent = `${percent}% abgeschlossen`;
+            }
+            if (progressDetail) {
+                progressDetail.textContent = `${completed} von ${totalSteps} Prozessschritten erledigt`;
+            }
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+            }
+            const worklistContainer = document.getElementById('worklist');
+            if (worklistContainer) {
+                worklistContainer.innerHTML = renderWorklistHTML();
+            }
+            const commList = document.getElementById('communicationList');
+            if (commList) {
+                commList.innerHTML = renderCommunicationHTML();
+            }
+        }
+
+        function resetStateForNewSelection() {
+            state.diagnosisId = null;
+            state.steps = {};
+            state.communication = [];
+        }
+
+        document.getElementById('patientSelect').addEventListener('change', event => {
+            state.patientId = event.target.value || null;
+            resetStateForNewSelection();
+            renderPatientCard();
+            renderDiverticulitisPath();
+        });
+
+        document.getElementById('diagnosisOptions').addEventListener('click', event => {
+            const button = event.target.closest('button[data-diagnosis-id]');
+            if (!button) return;
+            if (!state.patientId) {
+                alert('Bitte zuerst Patient:in auswählen.');
+                return;
+            }
+            const diagnosisId = button.dataset.diagnosisId;
+            state.diagnosisId = diagnosisId;
+            state.steps = {};
+            state.communication = [];
+            renderDiverticulitisPath();
+        });
+
+        document.addEventListener('change', event => {
+            if (event.target.matches('.step-status')) {
+                const stepId = event.target.dataset.stepId;
+                const value = event.target.value;
+                if (!state.steps[stepId]) state.steps[stepId] = {};
+                state.steps[stepId].status = value;
+                renderDiverticulitisPath();
+            }
+            if (event.target.matches('.step-due')) {
+                const stepId = event.target.dataset.stepId;
+                const value = event.target.value;
+                if (!state.steps[stepId]) state.steps[stepId] = {};
+                state.steps[stepId].due = value;
+                updateProgressUI();
+            }
+            if (event.target.matches('.task-checkbox')) {
+                const stepId = event.target.dataset.stepId;
+                const index = event.target.dataset.taskIndex;
+                if (!state.steps[stepId]) state.steps[stepId] = {};
+                const tasks = new Set(state.steps[stepId].tasks || []);
+                if (event.target.checked) {
+                    tasks.add(index);
+                } else {
+                    tasks.delete(index);
+                }
+                state.steps[stepId].tasks = Array.from(tasks);
+                updateProgressUI();
+            }
+        });
+
+        document.addEventListener('input', event => {
+            if (event.target.matches('.step-note')) {
+                const stepId = event.target.dataset.stepId;
+                if (!state.steps[stepId]) state.steps[stepId] = {};
+                state.steps[stepId].note = event.target.value;
+            }
+        });
+
+        document.addEventListener('submit', event => {
+            if (event.target.matches('#communicationForm')) {
+                event.preventDefault();
+                const form = event.target;
+                const formData = new FormData(form);
+                const entry = {
+                    recipient: formData.get('recipient'),
+                    subject: formData.get('subject'),
+                    due: formData.get('due'),
+                    note: formData.get('note')
+                };
+                state.communication.push(entry);
+                form.reset();
+                updateProgressUI();
+            }
+        });
+
+        renderPatientOptions();
+        renderDiagnosisOptions();
+        renderDiverticulitisPath();
+    </script>
+</body>
+</html>
