@@ -477,12 +477,14 @@
         ];
 
         const totalSteps = diverticulitisSections.reduce((count, section) => count + section.steps.length, 0);
+        const STORAGE_PREFIX = 'orbisDiverticulitisState_';
 
         const state = {
             patientId: null,
             diagnosisId: null,
             steps: {},
-            communication: []
+            communication: [],
+            reportDraft: ''
         };
         const svgIcons = {
             clipboard: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5V4a2 2 0 012-2h2a2 2 0 012 2v.5a.5.5 0 01-.5.5h-5a.5.5 0 01-.5-.5Zm-4.5 0A1.5 1.5 0 016 3h1.5v1a1 1 0 001 1h7a1 1 0 001-1V3H18a1.5 1.5 0 011.5 1.5v15A1.5 1.5 0 0118 21h-3.75a.75.75 0 01-.53-.22l-.5-.5a.75.75 0 00-.53-.22h-1.38a.75.75 0 00-.53.22l-.5.5a.75.75 0 01-.53.22H6A1.5 1.5 0 014.5 19.5v-15Z" /></svg>',
@@ -495,6 +497,23 @@
         function formatDate(iso) {
             const date = new Date(iso);
             return date.toLocaleDateString('de-DE');
+        }
+
+        function escapeHtml(value) {
+            if (!value) return '';
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleString('de-DE');
         }
 
         function renderPatientOptions() {
@@ -515,6 +534,12 @@
                 return;
             }
             const patient = patients.find(p => p.id === state.patientId);
+            const hasDocumentation = Boolean(
+                state.diagnosisId ||
+                Object.keys(state.steps || {}).length ||
+                (state.communication && state.communication.length) ||
+                state.reportDraft
+            );
             container.classList.remove('hidden');
             container.innerHTML = `
                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -560,6 +585,9 @@
                             <li>Initiale SOP-Schritte dokumentieren</li>
                             <li>Kommunikation & Termine planen</li>
                         </ul>
+                        ${hasDocumentation ? `
+                            <button type="button" data-action="reset-patient-state" class="mt-4 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100 transition">Dokumentation zurücksetzen</button>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -571,7 +599,9 @@
             diagnoses.forEach(diagnosis => {
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = `text-left w-full rounded-2xl border ${diagnosis.active ? 'border-indigo-200 hover:border-indigo-400 hover:shadow-lg' : 'border-dashed border-slate-300 cursor-not-allowed'} bg-white px-5 py-4 transition duration-200`;
+                const isSelected = diagnosis.id === state.diagnosisId;
+                const selectedClasses = isSelected ? 'border-indigo-500 ring-2 ring-indigo-200 shadow-lg shadow-indigo-200/70' : '';
+                button.className = `text-left w-full rounded-2xl border ${diagnosis.active ? `border-indigo-200 hover:border-indigo-400 hover:shadow-lg ${selectedClasses}` : 'border-dashed border-slate-300 cursor-not-allowed'} bg-white px-5 py-4 transition duration-200`;
                 button.dataset.diagnosisId = diagnosis.id;
                 if (!diagnosis.active) {
                     button.disabled = true;
@@ -582,7 +612,7 @@
                             <p class="font-semibold text-slate-900">${diagnosis.title}</p>
                             <p class="text-sm text-slate-500">${diagnosis.summary}</p>
                         </div>
-                        <span class="inline-flex items-center gap-1 rounded-full ${diagnosis.active ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'} px-3 py-1 text-[11px] font-semibold uppercase tracking-widest">${diagnosis.badge}</span>
+                        <span class="inline-flex items-center gap-1 rounded-full ${diagnosis.active ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'} px-3 py-1 text-[11px] font-semibold uppercase tracking-widest">${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7" /></svg>' : ''}${diagnosis.badge}</span>
                     </div>
                 `;
                 container.appendChild(button);
@@ -692,6 +722,7 @@
             const worklist = renderWorklistHTML();
             const communication = renderCommunicationHTML();
             const resources = renderResourceHTML();
+            const reportSection = renderReportSection();
 
             container.innerHTML = `
                 <div class="grid xl:grid-cols-[2fr,1fr] gap-6">
@@ -750,6 +781,7 @@
                                 ${communication}
                             </div>
                         </section>
+                        ${reportSection}
                         ${resources}
                     </aside>
                 </div>
@@ -870,6 +902,28 @@
             `;
         }
 
+        function renderReportSection() {
+            const disabled = state.diagnosisId !== 'acute-diverticulitis';
+            const copyDisabled = !state.reportDraft;
+            return `
+                <section class="border border-slate-200 rounded-3xl bg-white p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400">Export</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Prozessreport</h3>
+                        </div>
+                        <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 text-slate-500 px-3 py-1 text-xs font-semibold">Dokumentation</span>
+                    </div>
+                    <p class="text-sm text-slate-600">Erstellen Sie eine strukturierte Zusammenfassung aller Schritte, Deadlines und Notizen für die Orbis-Akte.</p>
+                    <div class="space-y-3">
+                        <button type="button" data-action="generate-report" class="w-full rounded-xl ${disabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'} py-2.5 font-semibold shadow-sm transition" ${disabled ? 'disabled' : ''}>Report generieren</button>
+                        <textarea data-report-output rows="8" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" placeholder="Report wird hier angezeigt." readonly>${escapeHtml(state.reportDraft)}</textarea>
+                        <button type="button" data-action="copy-report" class="w-full rounded-xl ${copyDisabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-emerald-500 text-white hover:bg-emerald-600'} py-2 font-semibold transition" ${copyDisabled ? 'disabled' : ''}>In Zwischenablage kopieren</button>
+                    </div>
+                </section>
+            `;
+        }
+
         function updateProgressUI() {
             const completed = getCompletedCount();
             const percent = totalSteps ? Math.round((completed / totalSteps) * 100) : 0;
@@ -893,18 +947,96 @@
             if (commList) {
                 commList.innerHTML = renderCommunicationHTML();
             }
+            const reportTextarea = document.querySelector('[data-report-output]');
+            if (reportTextarea && reportTextarea.value !== state.reportDraft) {
+                reportTextarea.value = state.reportDraft;
+            }
+            const copyButton = document.querySelector('[data-action="copy-report"]');
+            if (copyButton) {
+                copyButton.disabled = !state.reportDraft;
+                copyButton.classList.toggle('bg-slate-200', !state.reportDraft);
+                copyButton.classList.toggle('text-slate-500', !state.reportDraft);
+                copyButton.classList.toggle('cursor-not-allowed', !state.reportDraft);
+                copyButton.classList.toggle('bg-emerald-500', Boolean(state.reportDraft));
+                copyButton.classList.toggle('text-white', Boolean(state.reportDraft));
+                copyButton.classList.toggle('hover:bg-emerald-600', Boolean(state.reportDraft));
+            }
+            const diagnosisButtons = document.querySelectorAll('#diagnosisOptions button[data-diagnosis-id]');
+            diagnosisButtons.forEach(button => {
+                const isSelected = button.dataset.diagnosisId === state.diagnosisId;
+                button.classList.toggle('border-indigo-500', isSelected);
+                button.classList.toggle('ring-2', isSelected);
+                button.classList.toggle('ring-indigo-200', isSelected);
+                button.classList.toggle('shadow-lg', isSelected);
+            });
+            if (state.patientId) {
+                saveState();
+            }
         }
 
-        function resetStateForNewSelection() {
+        function saveState() {
+            if (!state.patientId) {
+                return;
+            }
+            const payload = {
+                diagnosisId: state.diagnosisId,
+                steps: state.steps,
+                communication: state.communication,
+                reportDraft: state.reportDraft
+            };
+            try {
+                localStorage.setItem(`${STORAGE_PREFIX}${state.patientId}`, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('Konnte Daten nicht speichern:', error);
+            }
+        }
+
+        function loadStateForPatient(patientId) {
+            state.patientId = patientId;
+            try {
+                const stored = localStorage.getItem(`${STORAGE_PREFIX}${patientId}`);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    state.diagnosisId = parsed?.diagnosisId || null;
+                    state.steps = parsed?.steps || {};
+                    state.communication = parsed?.communication || [];
+                    state.reportDraft = parsed?.reportDraft || '';
+                    return;
+                }
+            } catch (error) {
+                console.warn('Konnte gespeicherte Daten nicht laden:', error);
+            }
+            resetCurrentPatientState(false);
+        }
+
+        function resetCurrentPatientState(persist = true) {
             state.diagnosisId = null;
             state.steps = {};
             state.communication = [];
+            state.reportDraft = '';
+            if (persist && state.patientId) {
+                saveState();
+            }
+        }
+
+        function clearStateStorage(patientId) {
+            try {
+                localStorage.removeItem(`${STORAGE_PREFIX}${patientId}`);
+            } catch (error) {
+                console.warn('Konnte lokale Daten nicht löschen:', error);
+            }
         }
 
         document.getElementById('patientSelect').addEventListener('change', event => {
-            state.patientId = event.target.value || null;
-            resetStateForNewSelection();
+            const selectedId = event.target.value || null;
+            if (selectedId) {
+                loadStateForPatient(selectedId);
+            } else {
+                state.patientId = null;
+                resetCurrentPatientState(false);
+            }
             renderPatientCard();
+            renderDiagnosisOptions();
             renderDiverticulitisPath();
         });
 
@@ -919,7 +1051,9 @@
             state.diagnosisId = diagnosisId;
             state.steps = {};
             state.communication = [];
+            state.reportDraft = '';
             renderDiverticulitisPath();
+            saveState();
         });
 
         document.addEventListener('change', event => {
@@ -928,6 +1062,7 @@
                 const value = event.target.value;
                 if (!state.steps[stepId]) state.steps[stepId] = {};
                 state.steps[stepId].status = value;
+                saveState();
                 renderDiverticulitisPath();
             }
             if (event.target.matches('.step-due')) {
@@ -935,6 +1070,7 @@
                 const value = event.target.value;
                 if (!state.steps[stepId]) state.steps[stepId] = {};
                 state.steps[stepId].due = value;
+                saveState();
                 updateProgressUI();
             }
             if (event.target.matches('.task-checkbox')) {
@@ -948,6 +1084,7 @@
                     tasks.delete(index);
                 }
                 state.steps[stepId].tasks = Array.from(tasks);
+                saveState();
                 updateProgressUI();
             }
         });
@@ -957,6 +1094,7 @@
                 const stepId = event.target.dataset.stepId;
                 if (!state.steps[stepId]) state.steps[stepId] = {};
                 state.steps[stepId].note = event.target.value;
+                saveState();
             }
         });
 
@@ -973,9 +1111,106 @@
                 };
                 state.communication.push(entry);
                 form.reset();
-                updateProgressUI();
+                saveState();
+                renderDiverticulitisPath();
             }
         });
+
+        document.addEventListener('click', event => {
+            if (event.target.matches('[data-action="generate-report"]')) {
+                if (state.diagnosisId !== 'acute-diverticulitis') {
+                    alert('Bitte aktivieren Sie den Pfad „Akute Divertikulitis“, um einen Report zu generieren.');
+                    return;
+                }
+                const report = buildReport();
+                state.reportDraft = report;
+                saveState();
+                updateProgressUI();
+            }
+            if (event.target.matches('[data-action="copy-report"]')) {
+                const report = state.reportDraft;
+                if (!report) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(report).then(() => {
+                        event.target.textContent = 'Kopiert';
+                        setTimeout(() => {
+                            event.target.textContent = 'In Zwischenablage kopieren';
+                        }, 2000);
+                    }).catch(() => {
+                        window.prompt('Bitte kopieren Sie den Report manuell:', report);
+                    });
+                } else {
+                    window.prompt('Bitte kopieren Sie den Report manuell:', report);
+                }
+            }
+            if (event.target.matches('[data-action="reset-patient-state"]')) {
+                if (!state.patientId) return;
+                const confirmed = confirm('Möchten Sie die Dokumentation für diese:n Patient:in wirklich zurücksetzen?');
+                if (!confirmed) return;
+                clearStateStorage(state.patientId);
+                resetCurrentPatientState(true);
+                renderPatientCard();
+                renderDiagnosisOptions();
+                renderDiverticulitisPath();
+            }
+        });
+
+        function buildReport() {
+            if (!state.patientId) {
+                return '';
+            }
+            const patient = patients.find(p => p.id === state.patientId);
+            const lines = [];
+            lines.push(`Patient: ${patient.name} (${patient.age} Jahre)`);
+            lines.push('Aufnahmegrund: Akute Divertikulitis (konservativ)');
+            lines.push(`Versicherung: ${patient.insurance}`);
+            lines.push(`Allergien: ${patient.allergies}`);
+            lines.push(`Leitsymptome: ${patient.presentation}`);
+            lines.push(`Vitalparameter: ${patient.vitals}`);
+            lines.push('');
+            lines.push(`Fortschritt: ${getCompletedCount()} von ${totalSteps} Schritten abgeschlossen`);
+            lines.push('');
+            const statusLabel = {
+                offen: 'offen',
+                in_arbeit: 'in Arbeit',
+                abgeschlossen: 'abgeschlossen'
+            };
+            diverticulitisSections.forEach(section => {
+                lines.push(section.title.toUpperCase());
+                lines.push(section.description);
+                section.steps.forEach(step => {
+                    const stepState = state.steps[step.id] || {};
+                    const status = statusLabel[stepState.status || 'offen'];
+                    const due = formatDateTime(stepState.due);
+                    lines.push(`- ${step.title} [${status}]` + (due ? ` · Fällig bis ${due}` : ''));
+                    const completedTasks = (stepState.tasks || [])
+                        .map(index => step.checklist[Number(index)])
+                        .filter(Boolean);
+                    if (completedTasks.length) {
+                        lines.push(`  Erledigt: ${completedTasks.join('; ')}`);
+                    }
+                    if (stepState.note) {
+                        lines.push(`  Notiz: ${stepState.note}`);
+                    }
+                });
+                lines.push('');
+            });
+            if (state.communication.length) {
+                lines.push('Kommunikation & Aufträge:');
+                state.communication.forEach(entry => {
+                    const due = formatDateTime(entry.due);
+                    lines.push(`- ${entry.subject} → ${entry.recipient}` + (due ? ` (Fällig: ${due})` : ''));
+                    if (entry.note) {
+                        lines.push(`  Notiz: ${entry.note}`);
+                    }
+                });
+                lines.push('');
+            }
+            const timestamp = new Date().toLocaleString('de-DE');
+            lines.push(`Report generiert am ${timestamp}`);
+            return lines.join('
+');
+        }
 
         renderPatientOptions();
         renderDiagnosisOptions();
