@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbis – Behandlungspfad Pneumonie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top, #eef2ff, #f8fafc 45%, #f1f5f9 85%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: 0 25px 60px -35px rgba(15, 23, 42, 0.5);
+        }
+        .step-card {
+            border-radius: 1.25rem;
+            border: 1px solid rgba(99, 102, 241, 0.16);
+            background: white;
+            box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px -24px rgba(99, 102, 241, 0.45);
+        }
+        .timeline::before {
+            content: "";
+            position: absolute;
+            top: 1.5rem;
+            bottom: 1.5rem;
+            left: 1.25rem;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(129, 140, 248, 0.25) 0%, rgba(56, 189, 248, 0.6) 100%);
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 3.5rem;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 0;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 999px;
+            border: 2px solid rgba(59, 130, 246, 0.7);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-icon svg {
+            width: 0.75rem;
+            height: 0.75rem;
+        }
+        .status-pill {
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .order-log-item {
+            border-left: 3px solid #6366f1;
+        }
+        .mail-template {
+            min-height: 160px;
+        }
+        @media (max-width: 1024px) {
+            .timeline::before {
+                left: 0.9rem;
+            }
+            .timeline-item {
+                padding-left: 3rem;
+            }
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 space-y-8">
+        <header class="glass-card p-8 space-y-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.4em] text-indigo-400 font-semibold">Asklepios · Digitale SOP</p>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Orbis Behandlungspfad – Ambulant erworbene Pneumonie</h1>
+                    <p class="text-slate-600 max-w-3xl">Der Ablauf bildet den pneumologischen SOP-Flow inklusive ZNA, Diagnostik, Therapie und Entlassung ab. Patient:innen werden aus der Orbis-Akte gewählt, Maßnahmen erhalten Zeitstempel und Anordnungen können digital vorerfasst werden.</p>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-500 via-sky-500 to-teal-500 text-white rounded-3xl px-6 py-5 shadow-xl shadow-indigo-500/40 w-full max-w-sm">
+                    <p class="text-xs uppercase tracking-[0.25em] text-indigo-100">Fortschritt</p>
+                    <p class="text-3xl font-semibold" id="progressText">0 %</p>
+                    <div class="mt-3 h-2 w-full rounded-full bg-white/30 overflow-hidden">
+                        <div id="progressBar" class="h-full w-0 rounded-full bg-white transition-all duration-300"></div>
+                    </div>
+                    <p class="mt-3 text-sm text-indigo-100" id="progressDetail">0 von 0 Maßnahmen erledigt</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-[1.2fr,1fr]">
+            <div class="glass-card p-6 sm:p-8 space-y-6">
+                <div class="flex items-start justify-between gap-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-900">Patient:in wählen</h2>
+                        <p class="text-sm text-slate-500">Zugriff auf die Orbis-Akte, damit die hinterlegte SOP automatisch vorbereitet wird.</p>
+                    </div>
+                    <span class="status-pill bg-indigo-50 text-indigo-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 12c2.833 0 5.125-2.292 5.125-5.125S14.833 1.75 12 1.75 6.875 4.042 6.875 6.875 9.167 12 12 12Zm0 0c-4.004 0-7.25 3.246-7.25 7.25 0 .414.336.75.75.75h13c.414 0 .75-.336.75-.75 0-4.004-3.246-7.25-7.25-7.25Z" />
+                        </svg>
+                        Orbis Live
+                    </span>
+                </div>
+                <select id="patientSelect" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Bitte Patient:in wählen…</option>
+                </select>
+                <div id="patientCard" class="hidden rounded-2xl border border-indigo-50 bg-gradient-to-br from-white via-indigo-50/60 to-white p-5"></div>
+            </div>
+            <div class="glass-card p-6 sm:p-8 space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-900">Verdachtsdiagnose</h2>
+                        <p class="text-sm text-slate-500">Aktiviert passende SOP-Module. Weitere Pfade folgen sukzessive.</p>
+                    </div>
+                    <span class="status-pill bg-emerald-50 text-emerald-600">SOP 2024</span>
+                </div>
+                <div id="diagnosisOptions" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <section class="grid gap-6 lg:grid-cols-[1.5fr,0.9fr]">
+            <div class="glass-card p-6 sm:p-8 space-y-6">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-slate-900">Behandlungspfad Pneumonie</h2>
+                        <p class="text-sm text-slate-500" id="pathSubtitle">Bitte Patient:in und Diagnose wählen.</p>
+                    </div>
+                    <div class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0Z" />
+                        </svg>
+                        <span id="timelineInfo">Zeitleiste wartet auf Aktivierung.</span>
+                    </div>
+                </div>
+                <div id="pathContent" class="space-y-6"></div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-card p-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900">Zeitleiste & KPI</h3>
+                        <span class="status-pill bg-sky-50 text-sky-600" id="timelineStatus">0 Schritte aktiv</span>
+                    </div>
+                    <div id="timelinePanel" class="relative timeline space-y-6"></div>
+                </div>
+                <div class="glass-card p-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900">Digitale Anmeldungen</h3>
+                        <span class="status-pill bg-indigo-50 text-indigo-600" id="orderStatus">0 offene Orders</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-slate-600" for="orderSelect">Anforderung erstellen</label>
+                            <div class="grid gap-3 md:grid-cols-[2fr,1fr]">
+                                <select id="orderSelect" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none">
+                                    <option value="">Modul wählen…</option>
+                                </select>
+                                <button id="createOrderBtn" class="rounded-2xl bg-indigo-600 text-white font-semibold px-4 py-2 text-sm hover:bg-indigo-700 transition">Anmelden</button>
+                            </div>
+                            <textarea id="mailTemplate" class="mail-template w-full rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none" placeholder="Mailentwurf erscheint hier…"></textarea>
+                            <button id="copyMailBtn" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Mailtext kopieren</button>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-slate-600">Order-Protokoll</h4>
+                            <div id="ordersLog" class="mt-2 space-y-3 text-sm text-slate-600"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <template id="stepTemplate">
+        <div class="step-card p-6 space-y-4" data-step-card>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.4em] text-indigo-400 font-semibold" data-step-section></p>
+                    <h3 class="text-xl font-semibold text-slate-900" data-step-title></h3>
+                    <p class="text-sm text-slate-500" data-step-description></p>
+                </div>
+                <div class="text-right space-y-2">
+                    <span class="status-pill" data-step-focus></span>
+                    <p class="text-xs text-slate-400" data-step-deadline></p>
+                </div>
+            </div>
+            <ul class="space-y-2 text-sm text-slate-600" data-step-checklist></ul>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="text-sm text-slate-500 font-semibold">Bearbeitungszeitpunkt
+                    <input type="datetime-local" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none" data-step-datetime>
+                </label>
+                <label class="text-sm text-slate-500 font-semibold">Kurznotiz
+                    <textarea rows="2" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none" data-step-note placeholder="z.B. CURB-65 = 2, NIV erwogen"></textarea>
+                </label>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50" data-step-mail>Mailtext vorbereiten</button>
+                <button class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700" data-step-complete>Schritt abschließen</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="timelineItemTemplate">
+        <div class="timeline-item">
+            <div class="timeline-icon" data-icon></div>
+            <div>
+                <p class="text-xs uppercase tracking-[0.35em] text-slate-400" data-section></p>
+                <p class="text-sm font-semibold text-slate-800" data-title></p>
+                <p class="text-xs text-slate-500" data-deadline></p>
+                <p class="text-xs text-emerald-600 mt-1" data-status></p>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        const patients = [
+            {
+                id: 'p1',
+                name: 'Thomas Berger',
+                birthDate: '1965-06-11',
+                age: 58,
+                sex: 'männlich',
+                insurance: 'AOK Rheinland/Hamburg',
+                allergies: 'Keine bekannten Allergien',
+                presentation: 'Neuaufnahme über Rettungsdienst mit Dyspnoe, produktivem Husten und Fieber seit 3 Tagen.',
+                vitals: 'RR 142/86 mmHg · HF 112/min · Temp 38.8 °C · SpO₂ 90 % (3 l O₂)',
+                risk: ['Ex-Raucher 25 PY', 'COPD GOLD II', 'Adipositas (BMI 31)'],
+                labs: 'Leukozyten 15.3/nl, CRP 187 mg/l, Kreatinin 1.1 mg/dl',
+                priority: 'Neuaufnahme'
+            },
+            {
+                id: 'p2',
+                name: 'Sarah Klein',
+                birthDate: '1989-09-11',
+                age: 35,
+                sex: 'weiblich',
+                insurance: 'Techniker Krankenkasse',
+                allergies: 'Penicillin (Exanthem)',
+                presentation: 'Ambulant überwiesene Patientin mit Pleuritisschmerz rechts und produktivem Husten.',
+                vitals: 'RR 124/72 mmHg · HF 96/min · Temp 38.2 °C · SpO₂ 95 % RA',
+                risk: ['Asthma bronchiale leicht', 'Kein Nikotin'],
+                labs: 'Leukozyten 11.2/nl, CRP 86 mg/l, Kreatinin 0.7 mg/dl',
+                priority: 'Geplant'
+            },
+            {
+                id: 'p3',
+                name: 'Jutta Weiss',
+                birthDate: '1950-02-02',
+                age: 74,
+                sex: 'weiblich',
+                insurance: 'Barmer',
+                allergies: 'NSAR (Bronchospasmus)',
+                presentation: 'Pflegeheimübernahme mit Vigilanzminderung, Husten, Hypoxie. Verdacht auf Pneumonie bei Influenza.',
+                vitals: 'RR 118/64 mmHg · HF 104/min · Temp 39.0 °C · SpO₂ 88 % (4 l O₂)',
+                risk: ['DM Typ 2', 'Chronische Niereninsuffizienz G3b', 'Pflegebedürftigkeit'],
+                labs: 'Leukozyten 13.4/nl, CRP 210 mg/l, GFR 42 ml/min/1.73 m²',
+                priority: 'High Risk'
+            }
+        ];
+
+        const diagnoses = [
+            {
+                id: 'cap',
+                title: 'Ambulant erworbene Pneumonie',
+                summary: 'SOP 2024 inkl. CURB-65, Diagnostik- und Therapiepfad.',
+                active: true,
+                badge: 'aktiv'
+            },
+            {
+                id: 'covid',
+                title: 'COVID-19 Pneumonie',
+                summary: 'Modul folgt in Kürze.',
+                active: false,
+                badge: 'in Arbeit'
+            },
+            {
+                id: 'copd',
+                title: 'COPD Exazerbation',
+                summary: 'Bitte das bestehende COPD-SOP verwenden.',
+                active: false,
+                badge: 'verlinkt'
+            }
+        ];
+
+        const pneumoniaSections = [
+            {
+                id: 'triage',
+                title: 'Aufnahme & Ersteinschätzung',
+                tone: 'from-indigo-500 via-sky-500 to-cyan-500',
+                steps: [
+                    {
+                        id: 'triage-mts',
+                        title: 'Triage, Vitalparameter & CURB-65',
+                        description: 'Initiale Stabilisierung, Schweregradeinstufung, Dokumentation im Orbis-Triagebogen.',
+                        checklist: [
+                            'Vitalparameter, Sauerstoffgabe und Monitoring anlegen',
+                            'CURB-65 dokumentieren und Entscheidung stationär/IMC treffen',
+                            'Sepsis-Screening (qSOFA, Laktat bei Bedarf) erfassen'
+                        ],
+                        deadline: 'innerhalb 30 Minuten',
+                        focus: 'Stabilisierung',
+                        sectionLabel: 'ZNA',
+                        mailTemplate: 'Bitte Triagedaten und CURB-65 Score an das ZNA-Koordinationsteam übermitteln.'
+                    },
+                    {
+                        id: 'history',
+                        title: 'Anamnese & Risikostratifikation',
+                        description: 'Komorbiditäten, Vortherapie, Impfstatus und mögliche Erregerquellen erfassen.',
+                        checklist: [
+                            'Symptombeginn, Reiseanamnese, Exposition (z. B. Legionellen) dokumentieren',
+                            'Vortherapien inkl. ambulante Antibiotika erfassen',
+                            'Impfstatus Pneumokokken/Influenza sowie Pflegebedarf hinterlegen'
+                        ],
+                        deadline: 'innerhalb 60 Minuten',
+                        focus: 'Dokumentation',
+                        sectionLabel: 'ZNA',
+                        mailTemplate: 'Bitte vollständige Anamnese inkl. Risikoprofil in der Orbis-Akte ergänzen.'
+                    }
+                ]
+            },
+            {
+                id: 'diagnostics',
+                title: 'Diagnostik & Mikrobiologie',
+                tone: 'from-sky-500 via-cyan-500 to-emerald-500',
+                steps: [
+                    {
+                        id: 'labs',
+                        title: 'Laborpanel & arterielle BGA',
+                        description: 'CRP, PCT, Blutbild, Kreatinin, Laktat, Gerinnung sowie BGA unter O₂ erfassen.',
+                        checklist: [
+                            'Basislabor + Procalcitonin anordnen',
+                            'BGA (pO₂, pCO₂, pH) bei SpO₂ < 92 % durchführen',
+                            'Laboranfrage mit Dringlichkeit in Orbis markieren'
+                        ],
+                        deadline: 'innerhalb 60 Minuten',
+                        focus: 'Labor',
+                        sectionLabel: 'Diagnostik',
+                        mailTemplate: 'Laboranfrage: Bitte CRP, PCT, BB, Laktat und BGA für Patient:in {patient} priorisieren.'
+                    },
+                    {
+                        id: 'imaging',
+                        title: 'Bildgebung Thorax',
+                        description: 'Röntgen-Thorax (2 Ebenen), bei schweren Verläufen CT Thorax (KM) anmelden.',
+                        checklist: [
+                            'Rö-Thorax im Stehen oder Bett mit Befundübermittlung an Station',
+                            'Bei Therapieversagen oder schweren Verläufen CT Thorax mit KM anmelden',
+                            'Befunde in Orbis hinterlegen und Pneumonie-Lokalisation markieren'
+                        ],
+                        deadline: 'innerhalb 2 Stunden',
+                        focus: 'Bildgebung',
+                        sectionLabel: 'Diagnostik',
+                        mailTemplate: 'Radiologie: Bitte Thoraxaufnahme/CT für Patient:in {patient} einplanen. Fragestellung: Pneumonieausdehnung.'
+                    },
+                    {
+                        id: 'microbiology',
+                        title: 'Mikrobiologie & PCR',
+                        description: 'Blutkulturen, Sputum, Pneumokokken-/Legionellenantigen, ggf. PCR respiratorisch.',
+                        checklist: [
+                            'Vor AB-Gabe 2x Blutkulturen + Sputum gewinnen',
+                            'Legionellen/Pneumokokken Antigen im Urin',
+                            'Respiratorisches Multiplex PCR-Panel bei atypischem Verlauf'
+                        ],
+                        deadline: 'vor erster Antibiotikagabe',
+                        focus: 'Mikrobiologie',
+                        sectionLabel: 'Diagnostik',
+                        mailTemplate: 'Mikrobiologie: Bitte Blutkulturen, Sputumkultur und Antigentests für Patient:in {patient} priorisieren.'
+                    }
+                ]
+            },
+            {
+                id: 'therapy',
+                title: 'Therapie & Stabilisierung',
+                tone: 'from-emerald-500 via-teal-500 to-cyan-500',
+                steps: [
+                    {
+                        id: 'antibiotics',
+                        title: 'Antibiotikatherapie starten',
+                        description: 'Empirische Kombination nach CURB-65 und Risikoprofil mit Dokumentation der Indikation.',
+                        checklist: [
+                            'Standard: Ampicillin/Sulbactam i.v. + Makrolid (z. B. Clarithromycin)',
+                            'Bei Penicillinallergie: Levofloxacin oder Moxifloxacin',
+                            'Dauer und Deeskalation nach 48–72 h planen'
+                        ],
+                        deadline: 'innerhalb 3 Stunden nach Aufnahme',
+                        focus: 'Therapie',
+                        sectionLabel: 'Therapie',
+                        mailTemplate: 'Pharmazie: Bitte Antibiotikatherapie nach Pneumonie-Standard für Patient:in {patient} freigeben.'
+                    },
+                    {
+                        id: 'supportive',
+                        title: 'Supportive Maßnahmen',
+                        description: 'O₂-Therapie, Flüssigkeitsmanagement, Antipyrese und Bronchialhygiene strukturieren.',
+                        checklist: [
+                            'SpO₂-Ziel 92–96 % (COPD 88–92 %); ggf. High-Flow etablieren',
+                            'Flüssigkeitsbilanzierung / i.v. Volumen nach Bedarf',
+                            'Physiotherapie/ASE und Inhalationen einplanen'
+                        ],
+                        deadline: 'kontinuierlich',
+                        focus: 'Support',
+                        sectionLabel: 'Therapie',
+                        mailTemplate: 'Pflege/Physio: Bitte supportive Maßnahmen (O₂, Physio, Flüssigkeitsbilanz) lt. SOP anlegen.'
+                    },
+                    {
+                        id: 'escalation',
+                        title: 'Esklation / IMC-Alarm',
+                        description: 'Bei respiratorischer Verschlechterung NIV oder IMC-Transfer frühzeitig planen.',
+                        checklist: [
+                            'qSOFA ≥ 2 oder pO₂/FiO₂ < 200 → Intensivkonsil',
+                            'NIV oder Invasiv je nach Hyperkapnie/Hypoxie',
+                            'Notfallteam informieren und Dokumentation anstoßen'
+                        ],
+                        deadline: 'bei klinischer Verschlechterung',
+                        focus: 'Alarm',
+                        sectionLabel: 'Therapie',
+                        mailTemplate: 'IMC: Bitte Aufnahmemöglichkeit prüfen. Patient:in {patient}, Pneumonie mit Eskalationsbedarf.'
+                    }
+                ]
+            },
+            {
+                id: 'discharge',
+                title: 'Monitoring & Entlassung',
+                tone: 'from-cyan-500 via-sky-500 to-indigo-500',
+                steps: [
+                    {
+                        id: 'rounds',
+                        title: 'Tägliche Visite & KPI',
+                        description: 'Fieberkurve, Atemfrequenz, Labortrend und Antibiotikadauer erfassen.',
+                        checklist: [
+                            'NEWS2 Score dokumentieren',
+                            'Antibiotikadauer und Deeskalation im Team besprechen',
+                            'Entlass-Checkliste 24h vor Entlassung starten'
+                        ],
+                        deadline: 'täglich 08:00 Uhr',
+                        focus: 'Monitoring',
+                        sectionLabel: 'Monitoring',
+                        mailTemplate: 'Teaminfo: Bitte NEWS2 und AB-Plan im Visitenprotokoll für Patient:in {patient} ergänzen.'
+                    },
+                    {
+                        id: 'discharge-plan',
+                        title: 'Entlassung & Nachsorge',
+                        description: 'Ambulante Weiterbetreuung, Impfberatung und Kontrolltermine festlegen.',
+                        checklist: [
+                            'Antibiotika oral fortführen und Dauer kommunizieren',
+                            'Hausärztliche Kontrolle (48–72 h) organisieren',
+                            'Impfberatung Pneumokokken/Influenza dokumentieren'
+                        ],
+                        deadline: 'spätestens am Entlasstag',
+                        focus: 'Entlassung',
+                        sectionLabel: 'Monitoring',
+                        mailTemplate: 'Hausarztbrief: Bitte Entlassbrief mit Antibiotikaplan und Kontrollen für Patient:in {patient} vorbereiten.'
+                    }
+                ]
+            }
+        ];
+
+        const state = {
+            patient: null,
+            diagnosis: null,
+            stepDetails: {},
+            orders: []
+        };
+
+        const patientSelect = document.getElementById('patientSelect');
+        const patientCard = document.getElementById('patientCard');
+        const diagnosisOptions = document.getElementById('diagnosisOptions');
+        const pathSubtitle = document.getElementById('pathSubtitle');
+        const pathContent = document.getElementById('pathContent');
+        const timelineInfo = document.getElementById('timelineInfo');
+        const progressText = document.getElementById('progressText');
+        const progressDetail = document.getElementById('progressDetail');
+        const progressBar = document.getElementById('progressBar');
+        const timelinePanel = document.getElementById('timelinePanel');
+        const timelineStatus = document.getElementById('timelineStatus');
+        const orderSelect = document.getElementById('orderSelect');
+        const ordersLog = document.getElementById('ordersLog');
+        const orderStatus = document.getElementById('orderStatus');
+        const mailTemplate = document.getElementById('mailTemplate');
+
+        const stepTemplate = document.getElementById('stepTemplate');
+        const timelineTemplate = document.getElementById('timelineItemTemplate');
+
+        function init() {
+            patients.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = `${p.name} (${p.age} J., ${p.priority})`;
+                patientSelect.appendChild(option);
+            });
+
+            diagnoses.forEach(d => {
+                const wrapper = document.createElement('button');
+                wrapper.className = `w-full rounded-2xl border px-4 py-3 text-left ${d.active ? 'border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100' : 'border-slate-200 text-slate-500 bg-white/70 cursor-not-allowed'}`;
+                wrapper.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-semibold">${d.title}</p>
+                            <p class="text-xs text-slate-500">${d.summary}</p>
+                        </div>
+                        <span class="status-pill ${d.active ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}">${d.badge}</span>
+                    </div>`;
+                wrapper.disabled = !d.active;
+                if (d.active) {
+                    wrapper.addEventListener('click', () => selectDiagnosis(d));
+                }
+                diagnosisOptions.appendChild(wrapper);
+            });
+        }
+
+        function selectDiagnosis(diagnosis) {
+            state.diagnosis = diagnosis;
+            pathSubtitle.textContent = `Aktiver Pfad: ${diagnosis.title}`;
+            timelineInfo.textContent = 'Zeitleiste aktualisiert.';
+            renderPath();
+            renderTimeline();
+            renderOrderOptions();
+        }
+
+        patientSelect.addEventListener('change', () => {
+            const selected = patients.find(p => p.id === patientSelect.value);
+            state.patient = selected || null;
+            if (selected) {
+                patientCard.classList.remove('hidden');
+                patientCard.innerHTML = `
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <h3 class="text-lg font-semibold text-slate-900">${selected.name}</h3>
+                            <span class="status-pill bg-emerald-50 text-emerald-600">${selected.priority}</span>
+                        </div>
+                        <p class="text-sm text-slate-500">geb. ${selected.birthDate} · ${selected.sex} · ${selected.insurance}</p>
+                        <p class="text-sm text-slate-600">${selected.presentation}</p>
+                        <div class="grid gap-3 sm:grid-cols-2 text-sm text-slate-600">
+                            <div>
+                                <p class="font-semibold text-slate-700">Vitalparameter</p>
+                                <p>${selected.vitals}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-700">Letzte Labore</p>
+                                <p>${selected.labs}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${selected.risk.map(r => `<span class="status-pill bg-slate-100 text-slate-600">${r}</span>`).join('')}
+                        </div>
+                    </div>`;
+            } else {
+                patientCard.classList.add('hidden');
+            }
+            renderTimeline();
+        });
+
+        pathContent.addEventListener('click', handleCardClick);
+        pathContent.addEventListener('input', handleCardInput);
+
+        function renderPath() {
+            pathContent.innerHTML = '';
+            state.stepDetails = {};
+            pneumoniaSections.forEach(section => {
+                const sectionHeader = document.createElement('div');
+                sectionHeader.className = `rounded-2xl border border-slate-100 bg-gradient-to-r ${section.tone} text-white p-5 shadow-md`;
+                sectionHeader.innerHTML = `
+                    <p class="text-xs uppercase tracking-[0.4em] text-white/70">${section.title}</p>
+                    <p class="text-lg font-semibold">${section.steps.length} Maßnahmen</p>`;
+                pathContent.appendChild(sectionHeader);
+
+                section.steps.forEach(step => {
+                    const clone = stepTemplate.content.cloneNode(true);
+                    clone.querySelector('[data-step-section]').textContent = section.title;
+                    clone.querySelector('[data-step-title]').textContent = step.title;
+                    clone.querySelector('[data-step-description]').textContent = step.description;
+                    clone.querySelector('[data-step-focus]').textContent = step.focus;
+                    clone.querySelector('[data-step-focus]').classList.add('bg-slate-100', 'text-slate-700');
+                    clone.querySelector('[data-step-deadline]').textContent = step.deadline;
+                    const checklist = clone.querySelector('[data-step-checklist]');
+                    step.checklist.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span class="inline-flex items-start gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>${item}</span>`;
+                        checklist.appendChild(li);
+                    });
+                    const card = clone.querySelector('[data-step-card]');
+                    card.dataset.stepId = step.id;
+                    card.dataset.stepMailTemplate = step.mailTemplate;
+                    card.dataset.stepTitle = step.title;
+                    card.dataset.sectionLabel = step.sectionLabel;
+                    pathContent.appendChild(card);
+                    state.stepDetails[step.id] = {
+                        info: step,
+                        completed: false,
+                        datetime: '',
+                        note: ''
+                    };
+                });
+            });
+            updateProgress();
+        }
+
+        function handleCardInput(event) {
+            const card = event.target.closest('[data-step-card]');
+            if (!card) return;
+            const stepId = card.dataset.stepId;
+            const detail = state.stepDetails[stepId];
+            if (!detail) return;
+            if (event.target.matches('[data-step-datetime]')) {
+                detail.datetime = event.target.value;
+                renderTimeline();
+            }
+            if (event.target.matches('[data-step-note]')) {
+                detail.note = event.target.value;
+            }
+        }
+
+        function handleCardClick(event) {
+            const card = event.target.closest('[data-step-card]');
+            if (!card) return;
+            const stepId = card.dataset.stepId;
+            if (event.target.matches('[data-step-complete]')) {
+                const detail = state.stepDetails[stepId];
+                detail.completed = !detail.completed;
+                card.classList.toggle('ring-2');
+                card.classList.toggle('ring-emerald-400');
+                updateProgress();
+                renderTimeline();
+            }
+            if (event.target.matches('[data-step-mail]')) {
+                const template = card.dataset.stepMailTemplate;
+                prepareMail(stepId, template);
+            }
+        }
+
+        function prepareMail(stepId, template) {
+            if (!state.patient) {
+                mailTemplate.value = 'Bitte zuerst eine Patient:in wählen.';
+                return;
+            }
+            const step = state.stepDetails[stepId];
+            const dateInfo = step.datetime ? `Geplanter Zeitpunkt: ${new Date(step.datetime).toLocaleString('de-DE')}.` : '';
+            const text = template.replace('{patient}', state.patient.name);
+            mailTemplate.value = `An: ${getMailRecipient(step.info.focus)}\nBetreff: ${step.info.title} – ${state.patient.name}\n\nSehr geehrte Kolleg:innen,\n\n${text}\n${dateInfo}\nHinweis: ${step.note || 'siehe Orbis-Dokumentation.'}\n\nVielen Dank!`;
+        }
+
+        function getMailRecipient(focus) {
+            switch (focus) {
+                case 'Labor': return 'labor@klinik.de';
+                case 'Bildgebung': return 'radiologie@klinik.de';
+                case 'Mikrobiologie': return 'mikrobiologie@klinik.de';
+                case 'Therapie': return 'apotheke@klinik.de';
+                case 'Support': return 'pflegeleitung@klinik.de';
+                case 'Alarm': return 'imc@klinik.de';
+                case 'Monitoring': return 'stationsleitung@klinik.de';
+                case 'Entlassung': return 'arztbrief@klinik.de';
+                default: return 'koordination@klinik.de';
+            }
+        }
+
+        document.getElementById('copyMailBtn').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(mailTemplate.value);
+                alert('Mailtext kopiert.');
+            } catch (error) {
+                alert('Kopieren nicht möglich.');
+            }
+        });
+
+        function updateProgress() {
+            const steps = Object.values(state.stepDetails);
+            const completed = steps.filter(s => s.completed).length;
+            const total = steps.length;
+            const percent = total ? Math.round((completed / total) * 100) : 0;
+            progressText.textContent = `${percent} %`;
+            progressDetail.textContent = `${completed} von ${total} Maßnahmen erledigt`;
+            progressBar.style.width = `${percent}%`;
+        }
+
+        function renderTimeline() {
+            timelinePanel.innerHTML = '';
+            let active = 0;
+            pneumoniaSections.forEach(section => {
+                section.steps.forEach(step => {
+                    const detail = state.stepDetails[step.id];
+                    if (!detail) return;
+                    const clone = timelineTemplate.content.cloneNode(true);
+                    clone.querySelector('[data-section]').textContent = step.sectionLabel;
+                    clone.querySelector('[data-title]').textContent = step.title;
+                    clone.querySelector('[data-deadline]').textContent = step.deadline;
+                    const icon = clone.querySelector('[data-icon]');
+                    icon.innerHTML = detail.completed
+                        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>'
+                        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4" /></svg>';
+                    const statusEl = clone.querySelector('[data-status]');
+                    if (detail.completed) {
+                        statusEl.textContent = detail.datetime ? `abgeschlossen (${new Date(detail.datetime).toLocaleString('de-DE')})` : 'abgeschlossen';
+                        statusEl.classList.add('text-emerald-600');
+                    } else if (detail.datetime) {
+                        statusEl.textContent = `geplant: ${new Date(detail.datetime).toLocaleString('de-DE')}`;
+                        statusEl.classList.add('text-slate-500');
+                        active++;
+                    } else {
+                        statusEl.textContent = 'offen';
+                        statusEl.classList.add('text-rose-500');
+                        active++;
+                    }
+                    timelinePanel.appendChild(clone);
+                });
+            });
+            timelineStatus.textContent = `${active} Schritte aktiv`;
+        }
+
+        function renderOrderOptions() {
+            orderSelect.innerHTML = '<option value="">Modul wählen…</option>';
+            pneumoniaSections.forEach(section => {
+                section.steps.forEach(step => {
+                    const option = document.createElement('option');
+                    option.value = step.id;
+                    option.textContent = `${section.title} · ${step.title}`;
+                    orderSelect.appendChild(option);
+                });
+            });
+        }
+
+        document.getElementById('createOrderBtn').addEventListener('click', () => {
+            const stepId = orderSelect.value;
+            if (!stepId || !state.patient) {
+                alert('Bitte Patient:in und Modul wählen.');
+                return;
+            }
+            const detail = state.stepDetails[stepId];
+            const entry = {
+                timestamp: new Date(),
+                patient: state.patient.name,
+                step: detail.info.title,
+                section: detail.info.focus
+            };
+            state.orders.unshift(entry);
+            updateOrdersLog();
+            prepareMail(stepId, detail.info.mailTemplate);
+        });
+
+        function updateOrdersLog() {
+            ordersLog.innerHTML = '';
+            if (!state.orders.length) {
+                ordersLog.innerHTML = '<p class="text-slate-400">Noch keine digitalen Orders.</p>';
+                orderStatus.textContent = '0 offene Orders';
+                return;
+            }
+            state.orders.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'order-log-item rounded-xl bg-white/90 px-4 py-3 shadow';
+                div.innerHTML = `
+                    <p class="text-sm font-semibold text-slate-800">${entry.step}</p>
+                    <p class="text-xs text-slate-500">${entry.section} · ${entry.patient}</p>
+                    <p class="text-xs text-slate-400">${entry.timestamp.toLocaleString('de-DE')}</p>`;
+                ordersLog.appendChild(div);
+            });
+            orderStatus.textContent = `${state.orders.length} offene Orders`;
+        }
+
+        init();
+        updateOrdersLog();
+    </script>
+</body>
+</html>
