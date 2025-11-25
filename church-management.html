@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Church of Pentecost Finance & Membership Manager</title>
+  <style>
+    :root {
+      --primary: #1e4b87;
+      --accent: #f4b400;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #243746;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #2d6bb3);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    header h1 {
+      margin: 0 0 0.2rem;
+      font-size: 1.8rem;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 1.5rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1rem 1rem 1.25rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e7edf5;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    form {
+      display: grid;
+      gap: 0.5rem 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    form .full { grid-column: 1 / -1; }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid #c8d6e5;
+      font-size: 0.95rem;
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button.secondary {
+      background: #f0f3f8;
+      color: var(--text);
+      border: 1px solid #d7deea;
+    }
+
+    button:hover { background: #163a69; }
+
+    button.secondary:hover { background: #e1e7f0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e4e9f2;
+      padding: 0.45rem 0.4rem;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th { color: var(--primary); }
+
+    .pill {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .summary {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .summary .tile {
+      flex: 1 1 220px;
+      background: #f9fbff;
+      border: 1px solid #e7edf5;
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+    }
+
+    .summary .tile h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #4a6075;
+    }
+
+    .summary .tile p {
+      margin: 0.2rem 0 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .print-actions {
+      text-align: right;
+      margin: 0.8rem 0 1.2rem;
+    }
+
+    .badge-paid { background: #d5f5e3; color: #0a7a40; }
+    .badge-pending { background: #fff4d6; color: #8a6400; }
+
+    @media print {
+      header, .print-actions, button { display: none !important; }
+      body { background: #fff; }
+      .card { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Church of Pentecost • Ministry Manager</h1>
+    <p>Track tithes, offerings, pledges, attendance, and expenses in one page.</p>
+  </header>
+
+  <main>
+    <div class="print-actions">
+      <button onclick="window.print()">Print Report</button>
+    </div>
+
+    <section class="card">
+      <h2>Snapshot</h2>
+      <div class="summary" id="snapshot"></div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Add Income</h2>
+        <form id="income-form">
+          <label>Date<input type="date" name="date" required /></label>
+          <label>Amount (GHS)<input type="number" name="amount" min="0" step="0.01" required /></label>
+          <label>Income Stream
+            <select name="category" required>
+              <option value="Tithe">Tithe</option>
+              <option value="General Offering">General Offering</option>
+              <option value="Missionary Offering">Missionary Offering</option>
+              <option value="Building Fund">Building Fund</option>
+              <option value="Bus Contributions">Bus Contributions</option>
+              <option value="Youth Ministry">Youth Ministry</option>
+              <option value="Men's Ministry">Men's Ministry</option>
+              <option value="Women's Ministry">Women's Ministry</option>
+              <option value="Special Giving">Special Giving</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label class="full">Narration<input type="text" name="note" placeholder="e.g., Combined service, Harvest" /></label>
+          <button class="full" type="submit">Save Income</button>
+        </form>
+        <table id="income-table">
+          <thead>
+            <tr><th>Date</th><th>Stream</th><th>Note</th><th>Amount</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Add Expense</h2>
+        <form id="expense-form">
+          <label>Date<input type="date" name="date" required /></label>
+          <label>Amount (GHS)<input type="number" name="amount" min="0" step="0.01" required /></label>
+          <label>Expense Area
+            <select name="category" required>
+              <option value="Building Maintenance">Building Maintenance</option>
+              <option value="Groceries & Welfare">Groceries & Welfare</option>
+              <option value="Transport & Bus">Transport & Bus</option>
+              <option value="Gifts & Honorarium">Gifts & Honorarium</option>
+              <option value="Missions Support">Missions Support</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Administration">Administration</option>
+              <option value="Youth Ministry">Youth Ministry</option>
+              <option value="Men's Ministry">Men's Ministry</option>
+              <option value="Women's Ministry">Women's Ministry</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label class="full">Narration<input type="text" name="note" placeholder="e.g., Fuel for bus, offering to guest" /></label>
+          <button class="full" type="submit">Save Expense</button>
+        </form>
+        <table id="expense-table">
+          <thead>
+            <tr><th>Date</th><th>Area</th><th>Note</th><th>Amount</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Members</h2>
+        <form id="member-form">
+          <label>Name<input type="text" name="name" required /></label>
+          <label>Phone<input type="tel" name="phone" /></label>
+          <label>Email<input type="email" name="email" /></label>
+          <label>Join Date<input type="date" name="joinDate" /></label>
+          <button class="full" type="submit">Add Member</button>
+        </form>
+        <table id="member-table">
+          <thead><tr><th>Name</th><th>Contact</th><th>Joined</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Attendance</h2>
+        <form id="attendance-form">
+          <label>Date<input type="date" name="date" required /></label>
+          <label>Service
+            <select name="service" required>
+              <option value="Sunday Service">Sunday Service</option>
+              <option value="Midweek Service">Midweek Service</option>
+              <option value="Prayer Meeting">Prayer Meeting</option>
+              <option value="Youth Fellowship">Youth Fellowship</option>
+              <option value="Men's Fellowship">Men's Fellowship</option>
+              <option value="Women's Fellowship">Women's Fellowship</option>
+            </select>
+          </label>
+          <label class="full">Member
+            <select name="member" required id="attendance-member"></select>
+          </label>
+          <button class="full" type="submit">Record Attendance</button>
+        </form>
+        <table id="attendance-table">
+          <thead><tr><th>Date</th><th>Service</th><th>Member</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Pledges</h2>
+        <form id="pledge-form">
+          <label>Member
+            <select name="member" required id="pledge-member"></select>
+          </label>
+          <label>Purpose<input type="text" name="purpose" placeholder="e.g., Building fund" required /></label>
+          <label>Amount (GHS)<input type="number" name="amount" min="0" step="0.01" required /></label>
+          <label>Due Date<input type="date" name="due" /></label>
+          <button class="full" type="submit">Save Pledge</button>
+        </form>
+        <table id="pledge-table">
+          <thead><tr><th>Member</th><th>Purpose</th><th>Due</th><th>Status</th><th>Balance</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Category Breakdown</h2>
+        <div id="breakdown-income"></div>
+        <div id="breakdown-expense" style="margin-top:0.75rem;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      incomes: [],
+      expenses: [],
+      members: [],
+      attendance: [],
+      pledges: []
+    };
+
+    const formatCurrency = (value) => `GHS ${Number(value || 0).toFixed(2)}`;
+
+    const populateMemberSelects = () => {
+      const memberOptions = state.members.map(m => `<option value="${m.id}">${m.name}</option>`).join("");
+      document.getElementById("attendance-member").innerHTML = memberOptions || '<option value="" disabled selected>Add members first</option>';
+      document.getElementById("pledge-member").innerHTML = memberOptions || '<option value="" disabled selected>Add members first</option>';
+    };
+
+    const renderSnapshot = () => {
+      const incomeTotal = state.incomes.reduce((sum, i) => sum + i.amount, 0);
+      const expenseTotal = state.expenses.reduce((sum, i) => sum + i.amount, 0);
+      const pledgeBalance = state.pledges.reduce((sum, p) => sum + Math.max(p.amount - p.paid, 0), 0);
+      const attendanceCount = state.attendance.length;
+      const memberCount = state.members.length;
+
+      const tiles = [
+        { label: "Total Income", value: formatCurrency(incomeTotal) },
+        { label: "Total Expenses", value: formatCurrency(expenseTotal) },
+        { label: "Net Position", value: formatCurrency(incomeTotal - expenseTotal) },
+        { label: "Outstanding Pledges", value: formatCurrency(pledgeBalance) },
+        { label: "Members", value: memberCount },
+        { label: "Attendance Records", value: attendanceCount }
+      ];
+
+      document.getElementById("snapshot").innerHTML = tiles
+        .map(tile => `<div class="tile"><h3>${tile.label}</h3><p>${tile.value}</p></div>`)
+        .join("");
+    };
+
+    const renderTable = (id, rows) => {
+      document.querySelector(`#${id} tbody`).innerHTML = rows.join("") || '<tr><td colspan="4">No records yet.</td></tr>';
+    };
+
+    const renderIncome = () => {
+      const rows = state.incomes.map(item => `
+        <tr>
+          <td>${item.date}</td>
+          <td><span class="pill">${item.category}</span></td>
+          <td>${item.note || ""}</td>
+          <td>${formatCurrency(item.amount)}</td>
+        </tr>`);
+      renderTable("income-table", rows);
+    };
+
+    const renderExpense = () => {
+      const rows = state.expenses.map(item => `
+        <tr>
+          <td>${item.date}</td>
+          <td><span class="pill">${item.category}</span></td>
+          <td>${item.note || ""}</td>
+          <td>${formatCurrency(item.amount)}</td>
+        </tr>`);
+      renderTable("expense-table", rows);
+    };
+
+    const renderMembers = () => {
+      const rows = state.members.map(item => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${[item.phone, item.email].filter(Boolean).join(" · ")}</td>
+          <td>${item.joinDate || ""}</td>
+        </tr>`);
+      document.querySelector('#member-table tbody').innerHTML = rows.join("") || '<tr><td colspan="3">No members yet.</td></tr>';
+      populateMemberSelects();
+    };
+
+    const renderAttendance = () => {
+      const rows = state.attendance.map(item => {
+        const member = state.members.find(m => m.id === item.memberId);
+        return `<tr><td>${item.date}</td><td>${item.service}</td><td>${member ? member.name : 'Unknown'}</td></tr>`;
+      });
+      document.querySelector('#attendance-table tbody').innerHTML = rows.join("") || '<tr><td colspan="3">No attendance yet.</td></tr>';
+    };
+
+    const renderPledges = () => {
+      const rows = state.pledges.map((item, idx) => {
+        const member = state.members.find(m => m.id === item.memberId);
+        const balance = Math.max(item.amount - item.paid, 0);
+        const status = balance === 0 ? '<span class="pill badge-paid">Paid</span>' : `<span class="pill badge-pending">Pending</span>`;
+        return `
+          <tr>
+            <td>${member ? member.name : 'Unknown'}</td>
+            <td>${item.purpose}</td>
+            <td>${item.due || ''}</td>
+            <td>${status}</td>
+            <td>${formatCurrency(balance)}</td>
+            <td><button class="secondary" onclick="redeemPledge(${idx})">Redeem</button></td>
+          </tr>`;
+      });
+      document.querySelector('#pledge-table tbody').innerHTML = rows.join("") || '<tr><td colspan="6">No pledges yet.</td></tr>';
+    };
+
+    const renderBreakdown = () => {
+      const incomeTotals = groupTotals(state.incomes);
+      const expenseTotals = groupTotals(state.expenses);
+
+      const renderList = (totals) => {
+        if (totals.length === 0) return '<p>No data yet.</p>';
+        return `<ul style="padding-left:1rem; margin:0;">${totals.map(item => `<li><strong>${item.category}:</strong> ${formatCurrency(item.amount)}</li>`).join("")}</ul>`;
+      };
+
+      document.getElementById('breakdown-income').innerHTML = `<h3>Income by Source</h3>${renderList(incomeTotals)}`;
+      document.getElementById('breakdown-expense').innerHTML = `<h3>Expenses by Area</h3>${renderList(expenseTotals)}`;
+    };
+
+    const groupTotals = (items) => {
+      const map = items.reduce((acc, item) => {
+        acc[item.category] = (acc[item.category] || 0) + item.amount;
+        return acc;
+      }, {});
+      return Object.entries(map).map(([category, amount]) => ({ category, amount }));
+    };
+
+    const refresh = () => {
+      renderSnapshot();
+      renderIncome();
+      renderExpense();
+      renderMembers();
+      renderAttendance();
+      renderPledges();
+      renderBreakdown();
+    };
+
+    document.getElementById('income-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      state.incomes.push({
+        date: data.date,
+        category: data.category,
+        amount: Number(data.amount),
+        note: data.note
+      });
+      e.target.reset();
+      refresh();
+    });
+
+    document.getElementById('expense-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      state.expenses.push({
+        date: data.date,
+        category: data.category,
+        amount: Number(data.amount),
+        note: data.note
+      });
+      e.target.reset();
+      refresh();
+    });
+
+    document.getElementById('member-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      state.members.push({
+        id: crypto.randomUUID(),
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        joinDate: data.joinDate
+      });
+      e.target.reset();
+      refresh();
+    });
+
+    document.getElementById('attendance-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      if (!data.member) return alert('Add a member before recording attendance.');
+      state.attendance.push({
+        date: data.date,
+        service: data.service,
+        memberId: data.member
+      });
+      e.target.reset();
+      refresh();
+    });
+
+    document.getElementById('pledge-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      if (!data.member) return alert('Add a member before recording a pledge.');
+      state.pledges.push({
+        memberId: data.member,
+        purpose: data.purpose,
+        amount: Number(data.amount),
+        paid: 0,
+        due: data.due
+      });
+      e.target.reset();
+      refresh();
+    });
+
+    window.redeemPledge = (index) => {
+      const pledge = state.pledges[index];
+      const remaining = pledge.amount - pledge.paid;
+      if (remaining <= 0) return alert('This pledge is already fully paid.');
+      const value = prompt(`Enter amount to redeem for ${pledge.purpose} (remaining ${formatCurrency(remaining)}):`);
+      const amount = Number(value);
+      if (!amount || amount <= 0) return;
+      pledge.paid = Math.min(pledge.paid + amount, pledge.amount);
+      refresh();
+    };
+
+    refresh();
+  </script>
+</body>
+</html>
