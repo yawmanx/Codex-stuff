@@ -36,7 +36,7 @@
         .slide {
             width: 210mm;
             min-height: 297mm;
-            padding: 25mm 30mm;
+            padding: 30mm 35mm;
             page-break-after: always;
             background: var(--cream);
             position: relative;
@@ -50,43 +50,92 @@
             page-break-after: avoid;
         }
 
-        /* Decorative corner elements */
-        .slide::before,
-        .slide::after {
-            content: '✦';
+        /* Decorative border frame */
+        .border-frame {
             position: absolute;
-            font-size: 24px;
-            color: var(--gold);
-            opacity: 0.6;
+            top: 12mm;
+            left: 12mm;
+            right: 12mm;
+            bottom: 12mm;
+            border: 2px solid var(--gold);
+            pointer-events: none;
         }
 
-        .slide::before {
-            top: 20mm;
-            left: 25mm;
-        }
-
-        .slide::after {
-            bottom: 20mm;
-            right: 25mm;
-        }
-
-        .corner-tr,
-        .corner-bl {
+        .border-frame::before {
+            content: '';
             position: absolute;
-            font-size: 24px;
+            top: 3mm;
+            left: 3mm;
+            right: 3mm;
+            bottom: 3mm;
+            border: 1px solid var(--soft-gold);
+        }
+
+        /* Ornamental corner designs */
+        .corner {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            pointer-events: none;
+        }
+
+        .corner svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .corner-tl { top: 8mm; left: 8mm; }
+        .corner-tr { top: 8mm; right: 8mm; transform: scaleX(-1); }
+        .corner-bl { bottom: 8mm; left: 8mm; transform: scaleY(-1); }
+        .corner-br { bottom: 8mm; right: 8mm; transform: scale(-1, -1); }
+
+        /* Side ornaments */
+        .side-ornament {
+            position: absolute;
             color: var(--gold);
-            opacity: 0.6;
+            opacity: 0.4;
+            font-size: 14px;
+            letter-spacing: 3px;
         }
 
-        .corner-tr {
-            top: 20mm;
-            right: 25mm;
+        .side-ornament-top {
+            top: 12mm;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
-        .corner-bl {
-            bottom: 20mm;
-            left: 25mm;
+        .side-ornament-bottom {
+            bottom: 12mm;
+            left: 50%;
+            transform: translateX(-50%);
         }
+
+        /* Holly leaf decorations for corners */
+        .holly {
+            position: absolute;
+            opacity: 0.15;
+            font-size: 28px;
+        }
+
+        .holly-tl { top: 18mm; left: 18mm; transform: rotate(-45deg); }
+        .holly-tr { top: 18mm; right: 18mm; transform: rotate(45deg); }
+        .holly-bl { bottom: 18mm; left: 18mm; transform: rotate(-135deg); }
+        .holly-br { bottom: 18mm; right: 18mm; transform: rotate(135deg); }
+
+        /* Snowflake accents */
+        .snowflake {
+            position: absolute;
+            color: var(--gold);
+            opacity: 0.12;
+            font-size: 20px;
+        }
+
+        .sf-1 { top: 35mm; left: 20mm; }
+        .sf-2 { top: 35mm; right: 20mm; }
+        .sf-3 { bottom: 35mm; left: 20mm; }
+        .sf-4 { bottom: 35mm; right: 20mm; }
+        .sf-5 { top: 50%; left: 15mm; transform: translateY(-50%); }
+        .sf-6 { top: 50%; right: 15mm; transform: translateY(-50%); }
 
         /* Title styling */
         .carol-number {
@@ -233,8 +282,61 @@
 
     <!-- Carol 1: Once in Royal David's City -->
     <div class="slide slide-1 compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <!-- Decorative border frame -->
+        <div class="border-frame"></div>
+
+        <!-- Ornamental corners with SVG flourishes -->
+        <div class="corner corner-tl">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2" fill="none"/>
+                <path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5" fill="none"/>
+                <circle cx="8" cy="8" r="3" fill="#c9a227"/>
+                <path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5" fill="none"/>
+                <circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/>
+                <circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="corner corner-tr">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2" fill="none"/>
+                <path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5" fill="none"/>
+                <circle cx="8" cy="8" r="3" fill="#c9a227"/>
+                <path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5" fill="none"/>
+                <circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/>
+                <circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="corner corner-bl">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2" fill="none"/>
+                <path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5" fill="none"/>
+                <circle cx="8" cy="8" r="3" fill="#c9a227"/>
+                <path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5" fill="none"/>
+                <circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/>
+                <circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="corner corner-br">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2" fill="none"/>
+                <path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5" fill="none"/>
+                <circle cx="8" cy="8" r="3" fill="#c9a227"/>
+                <path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5" fill="none"/>
+                <circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/>
+                <circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/>
+            </svg>
+        </div>
+
+        <!-- Snowflake accents -->
+        <span class="snowflake sf-1">❄</span>
+        <span class="snowflake sf-2">❄</span>
+        <span class="snowflake sf-3">❄</span>
+        <span class="snowflake sf-4">❄</span>
+
+        <!-- Side ornaments -->
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span>
+        <span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
+
         <div class="carol-number">Carol One</div>
         <h1 class="carol-title">Once in Royal David's City</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -284,8 +386,13 @@
 
     <!-- Carol 2: Joy to the World -->
     <div class="slide slide-2">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Two</div>
         <h1 class="carol-title">Joy to the World</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -327,8 +434,13 @@
 
     <!-- Carol 3: O Come, All Ye Faithful -->
     <div class="slide slide-3 compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Three</div>
         <h1 class="carol-title">O Come, All Ye Faithful</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -365,8 +477,13 @@
 
     <!-- Carol 4: The First Noel -->
     <div class="slide slide-4 compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Four</div>
         <h1 class="carol-title">The First Noel</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -405,8 +522,13 @@
 
     <!-- Carol 5: See, Amid the Winter's Snow -->
     <div class="slide slide-5 compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Five</div>
         <h1 class="carol-title">See, Amid the Winter's Snow</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -447,8 +569,13 @@
 
     <!-- Carol 6: Silent Night -->
     <div class="slide slide-6">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Six</div>
         <h1 class="carol-title">Silent Night</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -482,8 +609,13 @@
 
     <!-- Carol 7: While Shepherds Watched Their Flocks by Night -->
     <div class="slide slide-7">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Seven</div>
         <h1 class="carol-title">While Shepherds Watched Their Flocks</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -517,8 +649,13 @@
 
     <!-- Carol 8: We Three Kings of Orient Are -->
     <div class="slide slide-8 extra-compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Eight</div>
         <h1 class="carol-title">We Three Kings of Orient Are</h1>
         <div class="title-ornament">— ❧ —</div>
@@ -565,8 +702,13 @@
 
     <!-- Carol 9: Hark! The Herald Angels Sing -->
     <div class="slide slide-9 extra-compact">
-        <span class="corner-tr">✦</span>
-        <span class="corner-bl">✦</span>
+        <div class="border-frame"></div>
+        <div class="corner corner-tl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-tr"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-bl"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <div class="corner corner-br"><svg viewBox="0 0 50 50" fill="none"><path d="M5 45 Q5 5 45 5" stroke="#c9a227" stroke-width="2"/><path d="M10 40 Q10 10 40 10" stroke="#c9a227" stroke-width="1" opacity="0.5"/><circle cx="8" cy="8" r="3" fill="#c9a227"/><path d="M15 5 Q20 15 5 15" stroke="#c9a227" stroke-width="1.5"/><circle cx="5" cy="25" r="2" fill="#c9a227" opacity="0.6"/><circle cx="25" cy="5" r="2" fill="#c9a227" opacity="0.6"/></svg></div>
+        <span class="snowflake sf-1">❄</span><span class="snowflake sf-2">❄</span><span class="snowflake sf-3">❄</span><span class="snowflake sf-4">❄</span>
+        <span class="side-ornament side-ornament-top">✦ ✦ ✦</span><span class="side-ornament side-ornament-bottom">✦ ✦ ✦</span>
         <div class="carol-number">Carol Nine</div>
         <h1 class="carol-title">Hark! The Herald Angels Sing</h1>
         <div class="title-ornament">— ❧ —</div>
