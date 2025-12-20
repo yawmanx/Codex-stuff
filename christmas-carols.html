@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine Christmas Carols</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --deep-green: #1a3a2f;
+            --gold: #c9a227;
+            --cream: #faf8f5;
+            --burgundy: #722f37;
+            --forest: #2d5a47;
+            --soft-gold: #e8d5a3;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            background: var(--cream);
+            color: var(--deep-green);
+            line-height: 1.5;
+        }
+
+        .slide {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 30mm;
+            page-break-after: always;
+            background: var(--cream);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slide:last-child {
+            page-break-after: avoid;
+        }
+
+        /* Decorative corner elements */
+        .slide::before,
+        .slide::after {
+            content: '✦';
+            position: absolute;
+            font-size: 24px;
+            color: var(--gold);
+            opacity: 0.6;
+        }
+
+        .slide::before {
+            top: 20mm;
+            left: 25mm;
+        }
+
+        .slide::after {
+            bottom: 20mm;
+            right: 25mm;
+        }
+
+        .corner-tr,
+        .corner-bl {
+            position: absolute;
+            font-size: 24px;
+            color: var(--gold);
+            opacity: 0.6;
+        }
+
+        .corner-tr {
+            top: 20mm;
+            right: 25mm;
+        }
+
+        .corner-bl {
+            bottom: 20mm;
+            left: 25mm;
+        }
+
+        /* Title styling */
+        .carol-number {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .carol-title {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--deep-green);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .title-ornament {
+            text-align: center;
+            font-size: 18px;
+            color: var(--gold);
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+        }
+
+        /* Lyrics styling */
+        .lyrics {
+            text-align: center;
+        }
+
+        .verse {
+            margin-bottom: 18px;
+        }
+
+        .verse p {
+            font-size: 14px;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .chorus,
+        .refrain {
+            font-style: italic;
+            color: var(--forest);
+            margin: 20px 0;
+            padding: 12px 0;
+            border-top: 1px solid var(--soft-gold);
+            border-bottom: 1px solid var(--soft-gold);
+        }
+
+        .chorus-label,
+        .refrain-label {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 8px;
+            font-style: normal;
+        }
+
+        /* Special styling for different slides */
+        .slide-1 { background: linear-gradient(180deg, var(--cream) 0%, #f5f0e8 100%); }
+        .slide-2 { background: linear-gradient(180deg, #f8f6f2 0%, var(--cream) 100%); }
+        .slide-3 { background: linear-gradient(180deg, var(--cream) 0%, #f7f4ed 100%); }
+        .slide-4 { background: linear-gradient(180deg, #f9f7f3 0%, var(--cream) 100%); }
+        .slide-5 { background: linear-gradient(180deg, var(--cream) 0%, #f6f3eb 100%); }
+        .slide-6 { background: linear-gradient(180deg, #f8f5ef 0%, var(--cream) 100%); }
+        .slide-7 { background: linear-gradient(180deg, var(--cream) 0%, #f7f5ee 100%); }
+        .slide-8 { background: linear-gradient(180deg, #f9f6f1 0%, var(--cream) 100%); }
+        .slide-9 { background: linear-gradient(180deg, var(--cream) 0%, #f8f5ed 100%); }
+
+        /* Compact verse for longer carols */
+        .compact .verse p {
+            font-size: 12.5px;
+            line-height: 1.6;
+        }
+
+        .compact .verse {
+            margin-bottom: 12px;
+        }
+
+        .compact .chorus,
+        .compact .refrain {
+            margin: 14px 0;
+            padding: 8px 0;
+        }
+
+        .extra-compact .verse p {
+            font-size: 11.5px;
+            line-height: 1.55;
+        }
+
+        .extra-compact .verse {
+            margin-bottom: 10px;
+        }
+
+        .extra-compact .carol-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .extra-compact .title-ornament {
+            margin-bottom: 18px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .slide {
+                width: 100%;
+                height: 100vh;
+            }
+        }
+
+        /* Screen presentation mode */
+        @media screen {
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                gap: 30px;
+                background: #2a2a2a;
+            }
+
+            .slide {
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Carol 1: Once in Royal David's City -->
+    <div class="slide slide-1 compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol One</div>
+        <h1 class="carol-title">Once in Royal David's City</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>Once in royal David's city,</p>
+                <p>Stood a lowly cattle shed,</p>
+                <p>Where a mother laid her baby</p>
+                <p>In a manger for His bed:</p>
+                <p>Mary was that mother mild,</p>
+                <p>Jesus Christ her little child.</p>
+            </div>
+            <div class="verse">
+                <p>He came down to earth from heaven,</p>
+                <p>Who is God and Lord of all,</p>
+                <p>And His shelter was a stable,</p>
+                <p>And His cradle was a stall;</p>
+                <p>With the poor and mean and lowly,</p>
+                <p>Lived on earth our Saviour holy.</p>
+            </div>
+            <div class="verse">
+                <p>And through all His wondrous childhood</p>
+                <p>He would honour and obey,</p>
+                <p>Love and watch the lowly maiden,</p>
+                <p>In whose gentle arms He lay;</p>
+                <p>Christian children all must be</p>
+                <p>Mild, obedient, good as He.</p>
+            </div>
+            <div class="verse">
+                <p>For He is our childhood's pattern,</p>
+                <p>Day by day like us He grew;</p>
+                <p>He was little, weak, and helpless,</p>
+                <p>Tears and smiles like us He knew;</p>
+                <p>And He feeleth for our sadness,</p>
+                <p>And He shareth in our gladness.</p>
+            </div>
+            <div class="verse">
+                <p>And our eyes at last shall see Him,</p>
+                <p>Through His own redeeming love,</p>
+                <p>For that Child so dear and gentle</p>
+                <p>Is our Lord in heaven above;</p>
+                <p>And He leads His children on</p>
+                <p>To the place where He is gone.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 2: Joy to the World -->
+    <div class="slide slide-2">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Two</div>
+        <h1 class="carol-title">Joy to the World</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>Joy to the world! the Lord is come;</p>
+                <p>Let earth receive her King;</p>
+                <p>Let every heart prepare Him room,</p>
+                <p>And heaven and nature sing,</p>
+                <p>And heaven and nature sing,</p>
+                <p>And heaven, and heaven, and nature sing.</p>
+            </div>
+            <div class="verse">
+                <p>Joy to the earth! the Saviour reigns;</p>
+                <p>Let men their songs employ;</p>
+                <p>While fields and floods, rocks, hills, and plains</p>
+                <p>Repeat the sounding joy,</p>
+                <p>Repeat the sounding joy,</p>
+                <p>Repeat, repeat, the sounding joy.</p>
+            </div>
+            <div class="verse">
+                <p>No more let sins and sorrows grow,</p>
+                <p>Nor thorns infest the ground;</p>
+                <p>He comes to make His blessings flow</p>
+                <p>Far as the curse is found,</p>
+                <p>Far as the curse is found,</p>
+                <p>Far as, far as, the curse is found.</p>
+            </div>
+            <div class="verse">
+                <p>He rules the world with truth and grace,</p>
+                <p>And makes the nations prove</p>
+                <p>The glories of His righteousness,</p>
+                <p>And wonders of His love,</p>
+                <p>And wonders of His love,</p>
+                <p>And wonders, wonders, of His love.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 3: O Come, All Ye Faithful -->
+    <div class="slide slide-3 compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Three</div>
+        <h1 class="carol-title">O Come, All Ye Faithful</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>O come, all ye faithful, joyful and triumphant,</p>
+                <p>O come ye, O come ye to Bethlehem;</p>
+                <p>Come and behold Him, born the King of angels:</p>
+            </div>
+            <div class="refrain">
+                <div class="refrain-label">Refrain</div>
+                <p>O come, let us adore Him,</p>
+                <p>O come, let us adore Him,</p>
+                <p>O come, let us adore Him,</p>
+                <p>Christ the Lord!</p>
+            </div>
+            <div class="verse">
+                <p>God of God, Light of Light,</p>
+                <p>Lo! He abhors not the Virgin's womb;</p>
+                <p>Very God, begotten, not created:</p>
+            </div>
+            <div class="verse">
+                <p>Sing, choirs of angels, sing in exultation,</p>
+                <p>Sing, all ye citizens of heaven above;</p>
+                <p>Glory to God in the highest:</p>
+            </div>
+            <div class="verse">
+                <p>Yea, Lord, we greet Thee, born this happy morning;</p>
+                <p>Jesus, to Thee be glory given;</p>
+                <p>Word of the Father, now in flesh appearing:</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 4: The First Noel -->
+    <div class="slide slide-4 compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Four</div>
+        <h1 class="carol-title">The First Noel</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>The first Noel the angel did say</p>
+                <p>Was to certain poor shepherds in fields as they lay;</p>
+                <p>In fields where they lay keeping their sheep,</p>
+                <p>On a cold winter's night that was so deep.</p>
+            </div>
+            <div class="chorus">
+                <div class="chorus-label">Chorus</div>
+                <p>Noel, Noel, Noel, Noel,</p>
+                <p>Born is the King of Israel.</p>
+            </div>
+            <div class="verse">
+                <p>They looked up and saw a star</p>
+                <p>Shining in the east beyond them far;</p>
+                <p>And to the earth it gave great light,</p>
+                <p>And so it continued both day and night.</p>
+            </div>
+            <div class="verse">
+                <p>And by the light of that same star</p>
+                <p>Three wise men came from country far;</p>
+                <p>To seek for a King was their intent,</p>
+                <p>And to follow the star wherever it went.</p>
+            </div>
+            <div class="verse">
+                <p>Then entered in those wise men three</p>
+                <p>Full reverently upon their knee,</p>
+                <p>And offered there in His presence</p>
+                <p>Their gold and myrrh and frankincense.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 5: See, Amid the Winter's Snow -->
+    <div class="slide slide-5 compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Five</div>
+        <h1 class="carol-title">See, Amid the Winter's Snow</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>See, amid the winter's snow,</p>
+                <p>Born for us on earth below,</p>
+                <p>See, the tender Lamb appears,</p>
+                <p>Promised from eternal years.</p>
+            </div>
+            <div class="chorus">
+                <div class="chorus-label">Chorus</div>
+                <p>Hail, thou ever-blessed morn,</p>
+                <p>Hail, redemption's happy dawn,</p>
+                <p>Sing through all Jerusalem,</p>
+                <p>Christ is born in Bethlehem.</p>
+            </div>
+            <div class="verse">
+                <p>Lo, within a manger lies</p>
+                <p>He who built the starry skies;</p>
+                <p>He who, throned in height sublime,</p>
+                <p>Sits amid the cherubim.</p>
+            </div>
+            <div class="verse">
+                <p>Sacred Infant, all divine,</p>
+                <p>What a tender love was Thine,</p>
+                <p>Thus to come from highest bliss</p>
+                <p>Down to such a world as this!</p>
+            </div>
+            <div class="verse">
+                <p>Teach, O teach us, Holy Child,</p>
+                <p>By Thy face so meek and mild,</p>
+                <p>Teach us to resemble Thee,</p>
+                <p>In Thy sweet humility.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 6: Silent Night -->
+    <div class="slide slide-6">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Six</div>
+        <h1 class="carol-title">Silent Night</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>Silent night, holy night,</p>
+                <p>All is calm, all is bright</p>
+                <p>Round yon Virgin Mother and Child;</p>
+                <p>Holy Infant, so tender and mild,</p>
+                <p>Sleep in heavenly peace,</p>
+                <p>Sleep in heavenly peace.</p>
+            </div>
+            <div class="verse">
+                <p>Silent night, holy night,</p>
+                <p>Shepherds quake at the sight;</p>
+                <p>Glories stream from heaven afar,</p>
+                <p>Heavenly hosts sing Alleluia;</p>
+                <p>Christ the Saviour is born,</p>
+                <p>Christ the Saviour is born!</p>
+            </div>
+            <div class="verse">
+                <p>Silent night, holy night,</p>
+                <p>Son of God, love's pure light;</p>
+                <p>Radiant beams from Thy holy face,</p>
+                <p>With the dawn of redeeming grace,</p>
+                <p>Jesus, Lord, at Thy birth,</p>
+                <p>Jesus, Lord, at Thy birth.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 7: While Shepherds Watched Their Flocks by Night -->
+    <div class="slide slide-7">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Seven</div>
+        <h1 class="carol-title">While Shepherds Watched Their Flocks</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>While shepherds watched their flocks by night,</p>
+                <p>All seated on the ground,</p>
+                <p>The angel of the Lord came down,</p>
+                <p>And glory shone around.</p>
+            </div>
+            <div class="verse">
+                <p>"Fear not," said he, (for mighty dread</p>
+                <p>Had seized their troubled mind);</p>
+                <p>"Glad tidings of great joy I bring</p>
+                <p>To you and all mankind."</p>
+            </div>
+            <div class="verse">
+                <p>"To you, in David's town, this day</p>
+                <p>Is born of David's line,</p>
+                <p>The Saviour, who is Christ the Lord;</p>
+                <p>And this shall be the sign."</p>
+            </div>
+            <div class="verse">
+                <p>"All glory be to God on high,</p>
+                <p>And to the earth be peace;</p>
+                <p>Goodwill henceforth from heaven to men</p>
+                <p>Begin and never cease."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 8: We Three Kings of Orient Are -->
+    <div class="slide slide-8 extra-compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Eight</div>
+        <h1 class="carol-title">We Three Kings of Orient Are</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>We three kings of Orient are,</p>
+                <p>Bearing gifts we traverse afar,</p>
+                <p>Field and fountain, moor and mountain,</p>
+                <p>Following yonder star.</p>
+            </div>
+            <div class="chorus">
+                <div class="chorus-label">Chorus</div>
+                <p>O Star of wonder, star of night,</p>
+                <p>Star with royal beauty bright,</p>
+                <p>Westward leading, still proceeding,</p>
+                <p>Guide us to thy perfect light.</p>
+            </div>
+            <div class="verse">
+                <p>Born a King on Bethlehem's plain,</p>
+                <p>Gold I bring to crown Him again,</p>
+                <p>King forever, ceasing never,</p>
+                <p>Over us all to reign.</p>
+            </div>
+            <div class="verse">
+                <p>Frankincense to offer have I;</p>
+                <p>Incense owns a Deity nigh;</p>
+                <p>Prayer and praising, gladly raising,</p>
+                <p>Worship Him, God most high.</p>
+            </div>
+            <div class="verse">
+                <p>Myrrh is mine; its bitter perfume</p>
+                <p>Breathes a life of gathering gloom;</p>
+                <p>Sorrowing, sighing, bleeding, dying,</p>
+                <p>Sealed in the stone-cold tomb.</p>
+            </div>
+            <div class="verse">
+                <p>Glorious now behold Him arise,</p>
+                <p>King and God and sacrifice;</p>
+                <p>Alleluia! Alleluia!</p>
+                <p>Sounds through the earth and skies.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carol 9: Hark! The Herald Angels Sing -->
+    <div class="slide slide-9 extra-compact">
+        <span class="corner-tr">✦</span>
+        <span class="corner-bl">✦</span>
+        <div class="carol-number">Carol Nine</div>
+        <h1 class="carol-title">Hark! The Herald Angels Sing</h1>
+        <div class="title-ornament">— ❧ —</div>
+        <div class="lyrics">
+            <div class="verse">
+                <p>Hark! the herald angels sing,</p>
+                <p>"Glory to the newborn King;</p>
+                <p>Peace on earth, and mercy mild,</p>
+                <p>God and sinners reconciled!"</p>
+                <p>Joyful, all ye nations, rise,</p>
+                <p>Join the triumph of the skies;</p>
+                <p>With th' angelic host proclaim,</p>
+                <p>"Christ is born in Bethlehem!"</p>
+            </div>
+            <div class="refrain">
+                <div class="refrain-label">Refrain</div>
+                <p>Hark! the herald angels sing,</p>
+                <p>"Glory to the newborn King!"</p>
+            </div>
+            <div class="verse">
+                <p>Christ, by highest heaven adored;</p>
+                <p>Christ, the everlasting Lord;</p>
+                <p>Late in time behold Him come,</p>
+                <p>Offspring of the Virgin's womb.</p>
+                <p>Veiled in flesh the Godhead see;</p>
+                <p>Hail the incarnate Deity,</p>
+                <p>Pleased as man with man to dwell,</p>
+                <p>Jesus, our Immanuel!</p>
+            </div>
+            <div class="verse">
+                <p>Hail the heaven-born Prince of Peace!</p>
+                <p>Hail the Sun of Righteousness!</p>
+                <p>Light and life to all He brings,</p>
+                <p>Risen with healing in His wings.</p>
+                <p>Mild He lays His glory by,</p>
+                <p>Born that man no more may die;</p>
+                <p>Born to raise the sons of earth,</p>
+                <p>Born to give them second birth.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
