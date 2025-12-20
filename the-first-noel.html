@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The First Noel - Christmas Carol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            font-family: Georgia, 'Times New Roman', serif;
+            padding: 20px;
+        }
+
+        .outer-frame {
+            background: #f5e6c8;
+            border: 4px solid #d4a84b;
+            border-radius: 8px;
+            padding: 8px;
+            max-width: 650px;
+            width: 100%;
+        }
+
+        .decorative-border {
+            border: 2px solid #2d5a3d;
+            border-radius: 4px;
+            padding: 30px 40px;
+            position: relative;
+            background: #f5e6c8;
+        }
+
+        /* Decorative flowers and bells */
+        .decoration {
+            position: absolute;
+            font-size: 20px;
+        }
+
+        /* Top row decorations */
+        .top-left { top: 8px; left: 8px; }
+        .top-1 { top: 8px; left: 15%; }
+        .top-2 { top: 8px; left: 30%; }
+        .top-3 { top: 8px; left: 45%; }
+        .top-4 { top: 8px; left: 60%; }
+        .top-5 { top: 8px; left: 75%; }
+        .top-right { top: 8px; right: 8px; }
+
+        /* Bottom row decorations */
+        .bottom-left { bottom: 8px; left: 8px; }
+        .bottom-1 { bottom: 8px; left: 15%; }
+        .bottom-2 { bottom: 8px; left: 30%; }
+        .bottom-3 { bottom: 8px; left: 45%; }
+        .bottom-4 { bottom: 8px; left: 60%; }
+        .bottom-5 { bottom: 8px; left: 75%; }
+        .bottom-right { bottom: 8px; right: 8px; }
+
+        /* Side decorations */
+        .left-1 { left: 8px; top: 25%; }
+        .left-2 { left: 8px; top: 50%; }
+        .left-3 { left: 8px; top: 75%; }
+        .right-1 { right: 8px; top: 25%; }
+        .right-2 { right: 8px; top: 50%; }
+        .right-3 { right: 8px; top: 75%; }
+
+        .flower {
+            color: #e74c3c;
+            text-shadow: 0 0 2px #c0392b;
+        }
+
+        .bell {
+            color: #d4a84b;
+            text-shadow: 0 0 2px #b8860b;
+        }
+
+        .content {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .title {
+            font-size: 2.8em;
+            font-style: italic;
+            font-weight: normal;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-family: 'Times New Roman', Georgia, serif;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .lyrics-container {
+            background: #fafafa;
+            border-radius: 15px;
+            padding: 35px 45px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin: 20px 10px;
+        }
+
+        .verse {
+            margin-bottom: 25px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .verse:last-child {
+            margin-bottom: 0;
+        }
+
+        .chorus {
+            font-weight: bold;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .chorus-label {
+            font-weight: bold;
+            font-style: italic;
+            color: #2d5a3d;
+        }
+
+        .chorus-ref {
+            font-style: italic;
+            color: #555;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+            color: #888;
+            font-size: 1em;
+        }
+
+        /* SVG-based decorations for better quality */
+        .flower-svg, .bell-svg {
+            width: 22px;
+            height: 22px;
+            position: absolute;
+        }
+
+        /* Flower positions */
+        .flower-top-1 { top: 6px; left: 15%; }
+        .flower-top-2 { top: 6px; left: 35%; }
+        .flower-top-3 { top: 6px; left: 55%; }
+        .flower-top-4 { top: 6px; left: 75%; }
+        .flower-bottom-1 { bottom: 6px; left: 15%; }
+        .flower-bottom-2 { bottom: 6px; left: 35%; }
+        .flower-bottom-3 { bottom: 6px; left: 55%; }
+        .flower-bottom-4 { bottom: 6px; left: 75%; }
+        .flower-left-1 { left: 6px; top: 35%; }
+        .flower-left-2 { left: 6px; top: 65%; }
+        .flower-right-1 { right: 6px; top: 35%; }
+        .flower-right-2 { right: 6px; top: 65%; }
+
+        /* Bell positions */
+        .bell-top-left { top: 6px; left: 6px; }
+        .bell-top-right { top: 6px; right: 6px; }
+        .bell-bottom-left { bottom: 6px; left: 6px; }
+        .bell-bottom-right { bottom: 6px; right: 6px; }
+        .bell-left-mid { left: 6px; top: 50%; transform: translateY(-50%); }
+        .bell-right-mid { right: 6px; top: 50%; transform: translateY(-50%); }
+        .bell-top-mid { top: 6px; left: 50%; transform: translateX(-50%); }
+        .bell-bottom-mid { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    </style>
+</head>
+<body>
+    <div class="outer-frame">
+        <div class="decorative-border">
+            <!-- Bell decorations (corners and mid-points) -->
+            <svg class="bell-svg bell-top-left" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-top-mid" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-top-right" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-left-mid" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-right-mid" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-bottom-left" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-bottom-mid" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <svg class="bell-svg bell-bottom-right" viewBox="0 0 24 24">
+                <path fill="#d4a84b" d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+
+            <!-- Flower decorations -->
+            <svg class="flower-svg flower-top-1" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-top-2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-top-3" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-top-4" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-bottom-1" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-bottom-2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-bottom-3" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-bottom-4" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-left-1" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-left-2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-right-1" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+            <svg class="flower-svg flower-right-2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4" fill="#e74c3c"/>
+                <circle cx="12" cy="5" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="19" r="3" fill="#e74c3c"/>
+                <circle cx="5" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="19" cy="12" r="3" fill="#e74c3c"/>
+                <circle cx="12" cy="12" r="2" fill="#f4d03f"/>
+            </svg>
+
+            <div class="content">
+                <h1 class="title">The First Noel</h1>
+                <p class="subtitle">Christmas Carol</p>
+
+                <div class="lyrics-container">
+                    <div class="verse">
+                        The first Noel the angel did say<br>
+                        Was to certain poor shepherds in fields as they lay;<br>
+                        In fields where they lay keeping their sheep,<br>
+                        On a cold winter's night that was so deep.
+                    </div>
+
+                    <div class="chorus">
+                        <span class="chorus-label">Chorus:</span><br>
+                        Noel, Noel, Noel, Noel,<br>
+                        Born is the King of Israel.
+                    </div>
+
+                    <div class="verse">
+                        They looked up and saw a star<br>
+                        Shining in the east beyond them far;<br>
+                        And to the earth it gave great light,<br>
+                        And so it continued both day and night.
+                    </div>
+
+                    <div class="chorus-ref">*Chorus*</div>
+
+                    <div class="verse">
+                        And by the light of that same star<br>
+                        Three wise men came from country far;<br>
+                        To seek for a King was their intent,<br>
+                        And to follow the star wherever it went.
+                    </div>
+
+                    <div class="chorus-ref">*Chorus*</div>
+
+                    <div class="verse">
+                        Then entered in those wise men three<br>
+                        Full reverently upon their knee,<br>
+                        And offered there in His presence<br>
+                        Their gold and myrrh and frankincense.
+                    </div>
+
+                    <div class="chorus-ref">*Chorus*</div>
+                </div>
+
+                <p class="footer">Carols</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
